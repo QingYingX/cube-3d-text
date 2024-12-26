@@ -65,6 +65,7 @@ const App: React.FC = () => {
                 size: 10,
                 depth: 5,
                 y: 8,
+                z: 0,
                 rotY: 0,
                 materials: materialGradientMediumYellow,
                 outlineWidth: 0.4,
@@ -80,6 +81,7 @@ const App: React.FC = () => {
                 size: 5,
                 depth: 3,
                 y: -4,
+                z: 0,
                 rotY: 0,
                 materials: materialGradientLightBlue,
                 outlineWidth: 0.5,
@@ -127,6 +129,12 @@ const App: React.FC = () => {
         const workspaceStr = localStorage.getItem('workspace');
         if (workspaceStr) {
             const workspace: WorkspaceData = JSON.parse(workspaceStr);
+            // 修复一些缺失的数据（兼容旧版数据）
+            workspace.texts.forEach((text) => {
+                if (!text.opts.z) {
+                    text.opts.z = 0;
+                }
+            });
             setLastWorkshop(workspace);
         }
     }, []);
@@ -243,6 +251,7 @@ const App: React.FC = () => {
                                                 size: 5,
                                                 depth: 3,
                                                 y: texts.length * -6,
+                                                z: 0,
                                                 rotY: 0,
                                                 materials: materialGradientLightBlue,
                                                 outlineWidth: 0.5,

@@ -38,6 +38,15 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                     onChange={(val) => onTextOptionsChange({ ...textOptions, y: val })}
                 />
             </Form.Item>
+            <Form.Item label={`${gLang('frontBackPosition')} (${textOptions.z.toFixed(1)})`}>
+                <Slider
+                    min={-20}
+                    max={20}
+                    step={0.1}
+                    value={textOptions.z}
+                    onChange={(val) => onTextOptionsChange({ ...textOptions, z: val })}
+                />
+            </Form.Item>
             <Form.Item label={`${gLang('upDownRotate')} (${textOptions.rotY.toFixed(1)})`}>
                 <Slider
                     min={-90}

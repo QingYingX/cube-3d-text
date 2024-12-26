@@ -31,14 +31,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
     }));
 
     const { gLang } = useLanguage();
-    
-    const text1Ref = useRef<THREE.Group>(null);
-    const text2Ref = useRef<THREE.Group>(null);
 
     const messageApi = useMessage();
 
-
-    const [, setSelectedObjects] = useState<THREE.Object3D[]>([]);
     const [font, setFont] = useState<Font | null>(null);
 
     useEffect(() => {
@@ -99,12 +94,6 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
         scene.background = null;
     }, [scene]);
 
-    useEffect(() => {
-        if (text1Ref.current && text2Ref.current) {
-            setSelectedObjects([text1Ref.current, text2Ref.current]);
-        }
-    }, [text1Ref, text2Ref]);
-
     return (
         <>
             {/* 添加光源 */}
@@ -126,7 +115,7 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
                                 opts={text.opts}
                                 globalTextureYOffset={globalTextureYOffset}
                                 font={font}
-                                position={[0, text.opts.y, 0]}
+                                position={[0, text.opts.y, text.opts.z]}
                                 rotation={[text.opts.rotY * (Math.PI / 180), 0, 0]}
                             />
                         ))}

@@ -14,6 +14,7 @@ export interface TextOptions {
     size: number;
     depth: number;
     y: number;
+    z: number;
     rotY: number
     materials: TextMaterials;
     outlineWidth: number;
