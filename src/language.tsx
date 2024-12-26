@@ -243,7 +243,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     const gLang = (path: string, params?: LanguageParams): string => {
         const getTranslation = (lang: string): string | undefined => {
             const keys = `${lang}.${path}`.split(".");
-            let result: any = languageConfig;
+            let result: string | LanguageConfig = languageConfig;
             for (const key of keys) {
                 if (result && typeof result === "object" && key in result) {
                     result = result[key];

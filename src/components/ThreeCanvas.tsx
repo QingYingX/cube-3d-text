@@ -137,15 +137,18 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
                     embedImages: true,
                 });
                 // 转 Blob 二进制并下载
-                // @ts-ignore
-                const blob = new Blob([glbBuffer], { type: "application/octet-stream" });
-                const url = URL.createObjectURL(blob);
+                if (glbBuffer instanceof ArrayBuffer) {
+                    const blob = new Blob([glbBuffer], { type: "application/octet-stream" });
+                    const url = URL.createObjectURL(blob);
 
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = "scene.glb";
-                link.click();
-                URL.revokeObjectURL(url);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = "scene.glb";
+                    link.click();
+                    URL.revokeObjectURL(url);
+                } else {
+                    console.error("导出的 glbBuffer 不是 ArrayBuffer 类型");
+                }
             } else {
                 // 文本 .gltf
                 const gltfJson = await exporter.parseAsync(group, {

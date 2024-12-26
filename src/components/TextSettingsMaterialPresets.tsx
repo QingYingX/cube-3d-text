@@ -24,29 +24,34 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
     const renderPreview = (material: TextMaterials) : CSSProperties => {
         const style: CSSProperties = {};
         switch (material.front.mode) {
-            case "color":
+            case "color": {
                 style.backgroundColor = (material.front as TextMaterialColorOption).color;
                 break;
-            case "gradient":
-                const {colorGradualStart, colorGradualEnd} = material.front as TextMaterialGradientOption;
-                style.background = `linear-gradient(180deg, ${colorGradualStart}, ${colorGradualEnd})`;
+            }
+            case "gradient": {
+                    const {colorGradualStart, colorGradualEnd} = material.front as TextMaterialGradientOption;
+                    style.background = `linear-gradient(180deg, ${colorGradualStart}, ${colorGradualEnd})`;
                 break;
-            case "image":
+            }
+            case "image": {
                 style.backgroundImage = `url(${(material.front as TextMaterialImageOption).image})`;
                 style.backgroundSize = 'auto 100%';
                 style.imageRendering = 'pixelated';
                 break;
+            }
         }
         switch (material.down.mode) {
-            case "color":
+            case "color": {
                 // Inner shadow with color
                 style.boxShadow = `0 -2px 0 0 ${(material.down as TextMaterialColorOption).color} inset`;
                 break;
-            case "gradient":
+            }
+            case "gradient": {
                 const { colorGradualStart } = material.down as TextMaterialGradientOption;
                 // Inner shadow with gradient end color
                 style.boxShadow = `0 -2px 0 0 ${colorGradualStart} inset`;
                 break;
+            }
         }
         return style;
     };

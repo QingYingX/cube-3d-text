@@ -37,8 +37,8 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
 
     const messageApi = useMessage();
 
-    //@ts-ignore
-    const [selectedObjects, setSelectedObjects] = useState<THREE.Object3D[]>([]);
+
+    const [, setSelectedObjects] = useState<THREE.Object3D[]>([]);
     const [font, setFont] = useState<Font | null>(null);
 
     useEffect(() => {
@@ -90,7 +90,7 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
                 }
             );
         }
-    }, [fontUrl]); // 每次 fontUrl 变化时重新加载字体
+    }, [fontUrl, gLang, messageApi]); // 每次 fontUrl 变化时重新加载字体
 
     const { scene } = useThree();
 

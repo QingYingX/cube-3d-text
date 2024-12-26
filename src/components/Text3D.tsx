@@ -73,7 +73,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
             letterSpacing: opts.letterSpacing,
             spacingWidth: opts.spacingWidth
         });
-    }, [content, opts.size, opts.depth, font, opts.letterSpacing, opts.spacingWidth, opts.outlineWidth]);
+    }, [content, opts.size, opts.depth, font, opts.letterSpacing, opts.spacingWidth, opts.outlineWidth, height]);
 
     const outlineMaterial = useMemo(() =>
             createMeshBasicMaterialFromOption(opts.materials.outline, false, [1, 1], [1, 1], [0, 0], { side: THREE.BackSide }),
@@ -135,7 +135,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
         grp.position.set(...position);
         grp.rotation.set(...rotation);
         return grp;
-    }, [mainMesh, position]);
+    }, [mainMesh, outlineMesh, position, rotation]);
 
     return <primitive object={group} ref={ref} />;
 });

@@ -30,7 +30,15 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
             image?: TextMaterialImageOption;
             color?: TextMaterialColorOption;
         };
-    }>({} as any);
+    }>({
+        front: {},
+        back: {},
+        up: {},
+        down: {},
+        left: {},
+        right: {},
+        outline: {},
+    });
 
     const { gLang } = useLanguage();
 
@@ -279,7 +287,7 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
 
     const renderExtraPreview = (material: TextMaterialOption) => {
         switch (material.mode) {
-            case "color":
+            case "color": {
                 return (
                     <div style={{
                         backgroundColor: (material as TextMaterialColorOption).color,
@@ -289,7 +297,8 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
                         boxShadow: "0 0 0 1px rgba(0, 0, 0, 0.1)"
                     }}/>
                 );
-            case "gradient":
+            }
+            case "gradient": {
                 const {colorGradualStart, colorGradualEnd} = material as TextMaterialGradientOption;
                 return (
                     <div style={{
@@ -300,7 +309,8 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
                         boxShadow: "0 0 0 1px rgba(0, 0, 0, 0.1)"
                     }} />
                 );
-            case "image":
+            }
+            case "image": {
                 return (
                     <img
                         src={(material as TextMaterialImageOption).image}
@@ -313,6 +323,7 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
                         }}
                     />
                 );
+            }
         }
     };
 
