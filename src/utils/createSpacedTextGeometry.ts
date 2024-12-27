@@ -113,7 +113,7 @@ export const createSpacedTextGeometry = ({
         const charGeometry = new TextGeometry(char, {
             font,
             size,
-            height,
+            depth: height,
             curveSegments,
             bevelEnabled
         });

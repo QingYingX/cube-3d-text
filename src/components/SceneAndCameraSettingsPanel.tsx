@@ -1,8 +1,8 @@
 import { FC, useRef, useState } from "react";
-import { Collapse, Divider, Form, Input, Select, Slider, Space, Button, Flex } from "antd";
+import { Collapse, Form, Input, Select, Slider, Modal, Button, Flex } from "antd";
 import { CameraOptions } from "../types/text";
 import { useLanguage } from "../language.tsx";
-import { convertTTFtoFaceTypeJson as convertToFaceTypeJson } from "../utils/ttfConverter.ts";
+import { convertTTFtoFaceTypeJson as convertToFaceTypeJson, ConvertResult } from "../utils/ttfConverter.ts";
 import customFontsStore from "../utils/localForageInstance.ts";
 import { useMessage } from "../contexts/MessageContext.tsx";
 import {
@@ -41,17 +41,15 @@ const SceneAndCameraSettingsPanel: FC<CameraSettingsPanelProps> = ({
 
     // 处理 TTF 文件上传
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const [tempFontName, setTempFontName] = useState(""); // 暂存用户输入的字体名称
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newFontName, setNewFontName] = useState("");
+    const [fontData, setFontData] = useState("");
 
     const messageApi = useMessage();
 
     const handleClickUploadTTF = () => {
-        if (tempFontName.trim() === "") {
-            messageApi?.warning(gLang('customFont.nameEmpty'));
-            return;
-        }
         if (fileInputRef.current) {
-            fileInputRef.current.value = ""; // 重置 input，否则无法重复选择同一个文件
+            fileInputRef.current.value = "";
             fileInputRef.current.click();
         }
     };
@@ -60,30 +58,23 @@ const SceneAndCameraSettingsPanel: FC<CameraSettingsPanelProps> = ({
         if (!event.target.files || event.target.files.length === 0) return;
         const file = event.target.files[0];
         try {
-            const jsonData = await convertTTFtoFaceType(file);
-            const fontKey = `font-${tempFontName.trim()}`;
-            await customFontsStore.setItem(fontKey, jsonData);
-
-            setCustomFonts((prev) => ({
-                ...prev,
-                [tempFontName]: 'custom:' + fontKey,
-            }));
-
-            setTempFontName("");
-            messageApi?.success(gLang('customFont.success'));
+            const data: ConvertResult = await convertTTFtoFaceType(file);
+            setFontData(data.data);
+            setNewFontName(data.names.fullName.en ?? "");
+            setIsModalOpen(true);
         } catch (error) {
-            console.error("字体加载失败:", error);
+            console.error("Font load failed:", error);
             messageApi?.error(gLang('customFont.failed'));
         }
     };
 
-    const convertTTFtoFaceType = (file: File): Promise<string> => {
+    const convertTTFtoFaceType = (file: File): Promise<ConvertResult> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const arrayBuffer = e.target?.result;
                 if (!(arrayBuffer instanceof ArrayBuffer)) {
-                    reject(new Error("文件读取错误"));
+                    reject(new Error("FileReader result is not an ArrayBuffer"));
                     return;
                 }
                 // 使用 facetype 进行转换
@@ -129,60 +120,85 @@ const SceneAndCameraSettingsPanel: FC<CameraSettingsPanelProps> = ({
     }));
 
     return (
-        <Collapse
-            defaultActiveKey={["camera"]}
-            bordered={false}
-            style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}
-        >
-            <Panel header={gLang("cameraSettings")} key="camera">
-                {/* 1. 字体选择 */}
-                <Form.Item label={gLang("font")}>
-                    <Select
-                        style={{ width: "100%" }}
-                        value={selectedFont}
-                        onChange={(value) => setSelectedFont(value)}
-                        dropdownRender={(menu) => (
-                            <>
-                                {menu}
-                                <Divider style={{ margin: "8px 0" }} />
-                                <Space style={{ padding: "0 8px 4px" }}>
-                                    <Input
-                                        size="small"
-                                        placeholder={gLang("customFont.namePlaceHolder")}
-                                        value={tempFontName}
-                                        onChange={(e) => setTempFontName(e.target.value)}
-                                        onKeyDown={(e) => e.stopPropagation()} // 避免按下回车时关闭下拉
-                                    />
-                                    <Button size="small" type="primary" onClick={handleClickUploadTTF}>
+        <>
+            <Modal
+                title={gLang("customFont.namePlaceHolder")}
+                open={isModalOpen}
+                okText={gLang("ok")}
+                cancelText={gLang("cancel")}
+                onOk={async () => {
+                    if (!newFontName.trim()) {
+                        return messageApi?.warning(gLang("customFont.nameEmpty"));
+                    }
+                    const fontKey = `font-${newFontName.trim()}`;
+                    await customFontsStore.setItem(fontKey, fontData);
+                    setCustomFonts((prev) => ({
+                        ...prev,
+                        [newFontName.trim()]: 'custom:' + fontKey,
+                    }));
+                    setNewFontName("");
+                    setFontData("");
+                    setIsModalOpen(false);
+                    messageApi?.success(gLang('customFont.success'));
+                }}
+                onCancel={() => {
+                    setNewFontName("");
+                    setFontData("");
+                    setIsModalOpen(false);
+                }}
+            >
+                <p>{gLang('customFont.nameInput')}</p>
+                <Input
+                    value={newFontName}
+                    onChange={(e) => setNewFontName(e.target.value)}
+                    placeholder={gLang("customFont.namePlaceHolder")}
+                />
+            </Modal>
+            <Collapse
+                defaultActiveKey={["camera"]}
+                bordered={false}
+                style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}
+            >
+                <Panel header={gLang("cameraSettings")} key="camera">
+                    {/* 1. 字体选择 */}
+                    <Form.Item label={gLang("font")}>
+                        <Select
+                            style={{ width: "100%" }}
+                            value={selectedFont}
+                            onChange={(value) => setSelectedFont(value)}
+                            dropdownRender={(menu) => (
+                                <>
+                                    {menu}
+                                    <Button size="small" type="dashed" block onClick={handleClickUploadTTF} style={{ marginTop: 8 }}>
                                         {gLang("customFont.upload")}
                                     </Button>
-                                </Space>
-                            </>
-                        )}
-                        options={fontOptions}
-                    />
-                    {/* 隐藏的 file input 用于接收 TTF */}
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".ttf"
-                        style={{ display: "none" }}
-                        onChange={handleFontFileChange}
-                    />
-                </Form.Item>
+                                </>
+                            )}
+                            options={fontOptions}
+                        />
+                        {/* 隐藏的 file input 用于接收 TTF */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".ttf"
+                            style={{ display: "none" }}
+                            onChange={handleFontFileChange}
+                        />
+                    </Form.Item>
 
-                {/* 2. 相机 FOV (perspective) 设置 */}
-                <Form.Item label={gLang("perspective", { angle: cameraOptions.fov })} style={{ marginBottom: 0 }}>
-                    <Slider
-                        min={1}
-                        max={120}
-                        step={1}
-                        value={cameraOptions.fov}
-                        onChange={(val) => setCameraOptions({ ...cameraOptions, fov: val })}
-                    />
-                </Form.Item>
-            </Panel>
-        </Collapse>
+                    {/* 2. 相机 FOV (perspective) 设置 */}
+                    <Form.Item label={gLang("perspective", { angle: cameraOptions.fov })} style={{ marginBottom: 0 }}>
+                        <Slider
+                            min={1}
+                            max={120}
+                            step={1}
+                            value={cameraOptions.fov}
+                            onChange={(val) => setCameraOptions({ ...cameraOptions, fov: val })}
+                        />
+                    </Form.Item>
+                </Panel>
+            </Collapse>
+        </>
     );
 };
 

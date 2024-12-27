@@ -18,6 +18,8 @@ export const languageConfig: Readonly<LanguageConfig> = {
         zh_CN: "中文",
         en_US: "English",
         ja_JP: "日本語",
+        ok: "确定",
+        cancel: "取消",
         defaultText1: "我的世界",
         defaultText2: "中国版",
         resetCamera: "重置相机",
@@ -76,7 +78,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         customFont: {
             namePlaceHolder: "自定义字体",
             upload: "上传字体",
-            nameEmpty: "请先输入字体名称（用于显示在字体列表里的名称）",
+            nameInput: "请输入字体名称（用于显示在字体列表里的名称）",
             success: "字体添加成功",
             failed: "字体添加失败（详细原因请看控制台）",
         }
@@ -85,6 +87,8 @@ export const languageConfig: Readonly<LanguageConfig> = {
         zh_CN: "中文",
         en_US: "English",
         ja_JP: "日本語",
+        ok: "OK",
+        cancel: "Cancel",
         defaultText1: "MineCraft",
         defaultText2: "Bedrock Edition",
         resetCamera: "Reset Camera",
@@ -143,7 +147,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         customFont: {
             namePlaceHolder: "Custom Font",
             upload: "Upload",
-            nameEmpty: "Please input the font name first",
+            nameInput: "Please input the font name",
             success: "Font added successfully",
             failed: "Font adding failed (please check the console for more details)",
         }
@@ -152,6 +156,8 @@ export const languageConfig: Readonly<LanguageConfig> = {
         zh_CN: "中文",
         en_US: "English",
         ja_JP: "日本語",
+        ok: "OK",
+        cancel: "キャンセル",
         defaultText1: "マインクラフト",
         defaultText2: "ベッドロック エディション",
         resetCamera: "カメラリセット",
@@ -210,7 +216,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         customFont: {
             namePlaceHolder: "カスタムフォント",
             upload: "アップロード",
-            nameEmpty: "フォント名を入力してください",
+            nameInput: "フォント名を入力してください",
             success: "フォントが追加されました",
             failed: "フォントの追加に失敗しました（詳細はコンソールを確認してください）"
         }

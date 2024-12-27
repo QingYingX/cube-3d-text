@@ -7,16 +7,21 @@ interface ConvertOptions {
     outputAsJson?: boolean;        // 是否输出 JSON，还是带 `_typeface_js.loadFace(...)` 的 JS
 }
 
+export interface ConvertResult {
+    names: opentype.FontNames,
+    data: string;
+}
+
 /**
  * 将 TTF 文件解析并转换为 facetype.js 格式的对象，最后序列化为字符串
  * @param arrayBuffer TTF流
  * @param options 一些可选的转换配置
- * @returns Promise<string> (返回 JSON 或 JS 字符串)
+ * @returns Promise<ConvertResult>
  */
 export async function convertTTFtoFaceTypeJson(
     arrayBuffer: ArrayBuffer,
     options: ConvertOptions = {}
-): Promise<string> {
+): Promise<ConvertResult> {
     const {
         reverseTypeface = false,
         restrictCharacters = false,
@@ -26,7 +31,7 @@ export async function convertTTFtoFaceTypeJson(
 
     return new Promise((resolve, reject) => {
         try {
-            const font = opentype.parse(arrayBuffer);
+            const font: opentype.Font = opentype.parse(arrayBuffer);
 
             // 调用核心的 convert 方法
             const resultString = convert(font, {
@@ -35,7 +40,11 @@ export async function convertTTFtoFaceTypeJson(
                 restrictCharacterSet,
                 outputAsJson,
             });
-            resolve(resultString);
+            resolve({
+                names: font.names,
+                data: resultString
+            }
+            );
         } catch (err) {
             reject(err);
         }
