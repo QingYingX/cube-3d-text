@@ -239,6 +239,13 @@ const readNavigatorLanguage = () => {
     return browserLanguage;
 }
 
+// 映射语言代码为符合 BCP 47 标准的值
+const bcp47LangMap: Record<string, string> = {
+    zh_CN: "zh-CN",
+    en_US: "en-US",
+    ja_JP: "ja-JP",
+};
+
 // Provider component
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const browserLanguage = readNavigatorLanguage();
@@ -247,6 +254,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     useEffect(() => {
         localStorage.setItem("language", language);
+        // 动态更新 HTML 的 lang 属性（确保符合标准并兼容浏览器）
+        document.documentElement.lang = bcp47LangMap[language] || "en-US";
     }, [language]);
 
     const gLang = (path: string, params?: LanguageParams): string => {
