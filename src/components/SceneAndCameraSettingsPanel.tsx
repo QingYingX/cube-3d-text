@@ -1,5 +1,5 @@
 import { FC, useRef, useState } from "react";
-import { Collapse, Form, Input, Select, Slider, Modal, Button, Flex } from "antd";
+import { Form, Input, Select, Slider, Modal, Button, Flex } from "antd";
 import { CameraOptions } from "../types/text";
 import { useLanguage } from "../language.tsx";
 import { convertTTFtoFaceTypeJson as convertToFaceTypeJson, ConvertResult } from "../utils/ttfConverter.ts";
@@ -23,8 +23,6 @@ interface CameraSettingsPanelProps {
     cameraOptions: CameraOptions;
     setCameraOptions: (opts: CameraOptions) => void;
 }
-
-const { Panel } = Collapse;
 
 /**
  * 将“相机设置”与“字体选择”部分抽离出来的组件
@@ -154,50 +152,42 @@ const SceneAndCameraSettingsPanel: FC<CameraSettingsPanelProps> = ({
                     placeholder={gLang("customFont.namePlaceHolder")}
                 />
             </Modal>
-            <Collapse
-                defaultActiveKey={["camera"]}
-                bordered={false}
-                style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}
-            >
-                <Panel header={gLang("cameraSettings")} key="camera">
-                    {/* 1. 字体选择 */}
-                    <Form.Item label={gLang("font")}>
-                        <Select
-                            style={{ width: "100%" }}
-                            value={selectedFont}
-                            onChange={(value) => setSelectedFont(value)}
-                            dropdownRender={(menu) => (
-                                <>
-                                    {menu}
-                                    <Button size="small" type="dashed" block onClick={handleClickUploadTTF} style={{ marginTop: 8 }}>
-                                        {gLang("customFont.upload")}
-                                    </Button>
-                                </>
-                            )}
-                            options={fontOptions}
-                        />
-                        {/* 隐藏的 file input 用于接收 TTF */}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".ttf"
-                            style={{ display: "none" }}
-                            onChange={handleFontFileChange}
-                        />
-                    </Form.Item>
+            {/* 1. 字体选择 */}
+            <Form.Item label={gLang("font")}>
+                <Select
+                    style={{ width: "100%" }}
+                    value={selectedFont}
+                    onChange={(value) => setSelectedFont(value)}
+                    dropdownRender={(menu) => (
+                        <>
+                            {menu}
+                            <Button size="small" type="dashed" block onClick={handleClickUploadTTF} style={{ marginTop: 8 }}>
+                                {gLang("customFont.upload")}
+                            </Button>
+                        </>
+                    )}
+                    options={fontOptions}
+                />
+                {/* 隐藏的 file input 用于接收 TTF */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".ttf"
+                    style={{ display: "none" }}
+                    onChange={handleFontFileChange}
+                />
+            </Form.Item>
 
-                    {/* 2. 相机 FOV (perspective) 设置 */}
-                    <Form.Item label={gLang("perspective", { angle: cameraOptions.fov })} style={{ marginBottom: 0 }}>
-                        <Slider
-                            min={1}
-                            max={120}
-                            step={1}
-                            value={cameraOptions.fov}
-                            onChange={(val) => setCameraOptions({ ...cameraOptions, fov: val })}
-                        />
-                    </Form.Item>
-                </Panel>
-            </Collapse>
+            {/* 2. 相机 FOV (perspective) 设置 */}
+            <Form.Item label={gLang("perspective", { angle: cameraOptions.fov })} style={{ marginBottom: 0 }}>
+                <Slider
+                    min={1}
+                    max={120}
+                    step={1}
+                    value={cameraOptions.fov}
+                    onChange={(val) => setCameraOptions({ ...cameraOptions, fov: val })}
+                />
+            </Form.Item>
         </>
     );
 };

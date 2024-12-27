@@ -1,16 +1,19 @@
 // src/App.tsx
 import React, { useEffect, useRef, useState } from "react";
 import {
+    Splitter,
     Alert,
     Button,
     Collapse,
     ConfigProvider,
     Dropdown,
     Flex,
-    Layout,
     MenuProps,
     Space,
-    Typography
+    Typography,
+    Tabs,
+    Card,
+    Popover
 } from "antd";
 import {
     AppstoreOutlined,
@@ -20,7 +23,8 @@ import {
     DeleteOutlined,
     GlobalOutlined,
     PlusOutlined,
-    ReloadOutlined
+    ReloadOutlined,
+    SettingOutlined
 } from "@ant-design/icons";
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import ThreeCanvas, { ThreeCanvasHandle } from "./components/ThreeCanvas";
@@ -33,7 +37,6 @@ import { useLanguage } from "./language.tsx";
 import SceneAndCameraSettingsPanel from "./components/SceneAndCameraSettingsPanel.tsx";
 import { builtinFontsMap, builtinFontsTextureYOffset } from "./utils/fonts.ts";
 
-const { Sider, Content } = Layout;
 const { Panel } = Collapse;
 
 const App: React.FC = () => {
@@ -57,6 +60,17 @@ const App: React.FC = () => {
         });
         localStorage.setItem("customFonts", JSON.stringify(customFonts));
     }, [customFonts]);
+
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const [texts, setTexts] = useState<Text3DData[]>([
         {
@@ -157,6 +171,53 @@ const App: React.FC = () => {
         setLastWorkshop(null);
     }, [selectedFont, texts, initTime]);
 
+    const handleAddText = () => {
+        setTexts([
+            ...texts,
+            {
+                content: 'New Text',
+                opts: {
+                    size: 5,
+                    depth: 3,
+                    y: texts.length * -6,
+                    z: 0,
+                    rotY: 0,
+                    materials: materialGradientLightBlue,
+                    outlineWidth: 0.5,
+                    letterSpacing: 1.5,
+                    spacingWidth: 0.2
+                },
+                position: [0, 0, 0],
+                rotation: [0, 0, 0]
+            }
+        ]);
+    }
+
+    // 手机端交互
+
+    const [tabActiveKey, setTabActiveKey] = useState('1');
+
+    const onTabChange = (key: string) => {
+        setTabActiveKey(key);
+    };
+
+    const onTabEdit = (e: React.MouseEvent | React.KeyboardEvent | string, action: 'add' | 'remove') => {
+        if (action === 'add') {
+            handleAddText();
+            setTabActiveKey((texts.length + 1).toString());
+        } else {
+            if (typeof e === 'string') {
+                const index = parseInt(e);
+                if (tabActiveKey === e) {
+                    setTabActiveKey('1');
+                }
+                const newTexts = [...texts];
+                newTexts.splice(index - 1, 1);
+                setTexts(newTexts);
+            }
+        }
+    };
+
     return (
         <ConfigProvider
             theme={{
@@ -181,10 +242,21 @@ const App: React.FC = () => {
             }}
         >
             <MessageProvider>
-                <Layout style={{ height: "100vh" }}>
-                    {/* 左侧配置面板 */}
-                    <Sider width={300} style={{ background: "#F5F5F5", padding: 16, overflow: "auto", marginBottom: 16 }}>
-                        <Flex vertical gap={"middle"} style={{ width: "100%" }}>
+                {/* 手机端场景和镜头设置*/}
+                {isMobile && (
+                    <Popover
+                        title={gLang('cameraSettings')}
+                        overlayStyle={{ width: "90%" }}
+                        content={
+                            <ConfigProvider
+                                theme={{
+                                    components: {
+                                        Form: {
+                                            itemMarginBottom: 0
+                                        }
+                                    },
+                                }}
+                            >
                             <SceneAndCameraSettingsPanel
                                 selectedFont={selectedFont}
                                 setSelectedFont={setSelectedFont}
@@ -195,82 +267,118 @@ const App: React.FC = () => {
                                 cameraOptions={cameraOptions}
                                 setCameraOptions={setCameraOptions}
                             />
-                            {texts.length > 0 &&
-                                <Collapse activeKey={textPanelActiveKeys} onChange={setTextPanelActiveKeys} bordered={false} style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}>
-                                    {texts.map((text, index) => (
-                                        <Panel
-                                            header={text.content ? text.content : gLang(`textPanelTitle`, { index: index + 1 })}
-                                            key={index + 1}
-                                            extra={
-                                                <Flex style={{ height: 22, width: 22, marginTop: -2 }}>
-                                                    <Button
-                                                        type={"text"}
-                                                        size={'small'}
-                                                        style={{
-                                                            height: 26,
-                                                            width: 26,
-                                                        }}
-                                                        onClick={() => {
-                                                            const newTexts = [...texts];
-                                                            newTexts.splice(index, 1);
-                                                            setTexts(newTexts);
-                                                        }}
-                                                    >
-                                                        <DeleteOutlined style={{ opacity: 0.5 }} />
-                                                    </Button>
-                                                </Flex>
-                                            }
-                                        >
-                                            <TextSettingsPanel
-                                                text={text.content}
-                                                textOptions={text.opts}
-                                                onTextChange={(newText) => {
-                                                    const newTexts = [...texts];
-                                                    newTexts[index].content = newText;
-                                                    setTexts(newTexts);
-                                                }}
-                                                onTextOptionsChange={(newOptions) => {
-                                                    const newTexts = [...texts];
-                                                    newTexts[index].opts = newOptions;
-                                                    setTexts(newTexts);
-                                                }}
+                            </ConfigProvider>
+                        }
+                        trigger="click"
+                        placement="bottomRight"
+                    >
+                        <Button style={{ position: "absolute", left: 20, top: 20, zIndex: 1 }}>
+                            <SettingOutlined />
+                        </Button>
+                    </Popover>
+                )}
+                <Splitter layout={isMobile ? 'vertical' : 'horizontal'} style={{ height: '100vh' }}>
+                    {/* 左侧配置面板 */}
+                    {
+                        !isMobile && (
+                            <Splitter.Panel defaultSize={300} min={250} max={500} style={{ background: "#F5F5F5", padding: 16, overflow: "auto" }}>
+                                <Flex vertical gap={"middle"} style={{ width: "100%" }}>
+                                    <Collapse
+                                        defaultActiveKey={["camera"]}
+                                        bordered={false}
+                                        style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}
+                                    >
+                                        <Panel header={gLang("cameraSettings")} key="camera">
+                                            <SceneAndCameraSettingsPanel
+                                                selectedFont={selectedFont}
+                                                setSelectedFont={setSelectedFont}
+                                                fontsMap={fontsMap}
+                                                setFontsMap={setFontsMap}
+                                                customFonts={customFonts}
+                                                setCustomFonts={setCustomFonts}
+                                                cameraOptions={cameraOptions}
+                                                setCameraOptions={setCameraOptions}
                                             />
                                         </Panel>
-                                    ))}
-                                </Collapse>
-                            }
-                            <Button
-                                type="dashed"
-                                icon={<PlusOutlined />}
-                                onClick={() => {
-                                    setTexts([
-                                        ...texts,
-                                        {
-                                            content: 'New Text',
-                                            opts: {
-                                                size: 5,
-                                                depth: 3,
-                                                y: texts.length * -6,
-                                                z: 0,
-                                                rotY: 0,
-                                                materials: materialGradientLightBlue,
-                                                outlineWidth: 0.5,
-                                                letterSpacing: 1.5,
-                                                spacingWidth: 0.2
-                                            },
-                                            position: [0, 0, 0],
-                                            rotation: [0, 0, 0]
-                                        }
-                                    ]);
-                                    setTextPanelActiveKeys([(texts.length + 1).toString()]);
-                                }}
-                            >
-                                {gLang('addText')}
-                            </Button>
-                        </Flex>
-                    </Sider>
+                                    </Collapse>
+                                    {texts.length > 0 &&
+                                        <Collapse activeKey={textPanelActiveKeys} onChange={setTextPanelActiveKeys} bordered={false} style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}>
+                                            {texts.map((text, index) => (
+                                                <Panel
+                                                    header={text.content ? text.content : gLang(`textPanelTitle`, { index: index + 1 })}
+                                                    key={index + 1}
+                                                    extra={
+                                                        <Flex style={{ height: 22, width: 22, marginTop: -2 }}>
+                                                            <Button
+                                                                type={"text"}
+                                                                size={'small'}
+                                                                style={{
+                                                                    height: 26,
+                                                                    width: 26,
+                                                                }}
+                                                                onClick={() => {
+                                                                    const newTexts = [...texts];
+                                                                    newTexts.splice(index, 1);
+                                                                    setTexts(newTexts);
+                                                                }}
+                                                            >
+                                                                <DeleteOutlined style={{ opacity: 0.5 }} />
+                                                            </Button>
+                                                        </Flex>
+                                                    }
+                                                >
+                                                    <TextSettingsPanel
+                                                        text={text.content}
+                                                        textOptions={text.opts}
+                                                        onTextChange={(newText) => {
+                                                            const newTexts = [...texts];
+                                                            newTexts[index].content = newText;
+                                                            setTexts(newTexts);
+                                                        }}
+                                                        onTextOptionsChange={(newOptions) => {
+                                                            const newTexts = [...texts];
+                                                            newTexts[index].opts = newOptions;
+                                                            setTexts(newTexts);
+                                                        }}
+                                                    />
+                                                </Panel>
+                                            ))}
+                                        </Collapse>
+                                    }
+                                    <Button
+                                        type="dashed"
+                                        icon={<PlusOutlined />}
+                                        onClick={() => {
+                                            setTexts([
+                                                ...texts,
+                                                {
+                                                    content: 'New Text',
+                                                    opts: {
+                                                        size: 5,
+                                                        depth: 3,
+                                                        y: texts.length * -6,
+                                                        z: 0,
+                                                        rotY: 0,
+                                                        materials: materialGradientLightBlue,
+                                                        outlineWidth: 0.5,
+                                                        letterSpacing: 1.5,
+                                                        spacingWidth: 0.2
+                                                    },
+                                                    position: [0, 0, 0],
+                                                    rotation: [0, 0, 0]
+                                                }
+                                            ]);
+                                            setTextPanelActiveKeys([(texts.length + 1).toString()]);
+                                        }}
+                                    >
+                                        {gLang('addText')}
+                                    </Button>
+                                </Flex>
+                            </Splitter.Panel>
+                        )
+                    }
                     {/* 右侧 3D 场景 */}
-                    <Content style={{ position: "relative" }}>
+                    <Splitter.Panel style={{ position: "relative" }}>
                         <ThreeCanvas
                             ref={threeCanvasRef}
                             cameraOptions={cameraOptions}
@@ -350,12 +458,13 @@ const App: React.FC = () => {
                         </Flex>
 
                         {/*顶部悬浮*/}
-                        <Flex style={{ position: "absolute", top: 16, zIndex: 1, width: "100%" }} justify={'center'}>
+                        <Flex style={{ position: "absolute", top: 16, zIndex: 1, width: "100%", pointerEvents: "none" }} justify={'center'}>
                             {lastWorkshop && (
                                 <Alert
                                     message={gLang('lastSaved.message', { count: lastWorkshop.texts.length })}
                                     type="info"
                                     showIcon
+                                    style={{ pointerEvents: "auto" }}
                                     action={
                                         <Space size={0} style={{ marginLeft: 12 }}>
                                             <Button
@@ -387,8 +496,62 @@ const App: React.FC = () => {
                                 />
                             )}
                         </Flex>
-                    </Content>
-                </Layout>
+                    </Splitter.Panel>
+
+                    {/* 手机端配置面板 */}
+                    {isMobile && (
+                        <Splitter.Panel defaultSize={"50%"} min={200}>
+                            <Flex vertical style={{ height: "100%", padding: 16 }}>
+                                <Tabs
+                                    tabBarStyle={{ marginBottom: 0 }}
+                                    removeIcon={<DeleteOutlined />}
+                                    onChange={onTabChange}
+                                    activeKey={tabActiveKey}
+                                    type="editable-card"
+                                    onEdit={onTabEdit}
+                                    items={texts.map((text, index) => {
+                                        return {
+                                            key: String(index + 1),
+                                            label: text.content || gLang('textPanelTitle', { index: index + 1 })
+                                        };
+                                    })}
+                                />
+                                {
+                                    texts.map((text, index) => (
+                                        <Card
+                                            style={{
+                                                display: tabActiveKey === String(index + 1) ? "block" : "none",
+                                                overflow: "auto",
+                                                height: "100%",
+                                                borderTopLeftRadius: 0
+                                            }}
+                                            styles={{
+                                                body: {
+                                                    overflow: "auto",
+                                                }
+                                            }}
+                                        >
+                                            <TextSettingsPanel
+                                                text={text.content}
+                                                textOptions={text.opts}
+                                                onTextChange={(newText) => {
+                                                    const newTexts = [...texts];
+                                                    newTexts[index].content = newText;
+                                                    setTexts(newTexts);
+                                                }}
+                                                onTextOptionsChange={(newOptions) => {
+                                                    const newTexts = [...texts];
+                                                    newTexts[index].opts = newOptions;
+                                                    setTexts(newTexts);
+                                                }}
+                                            />
+                                        </Card>
+                                    ))
+                                }
+                            </Flex>
+                        </Splitter.Panel>
+                    )}
+                </Splitter>
             </MessageProvider>
         </ConfigProvider>
     );
