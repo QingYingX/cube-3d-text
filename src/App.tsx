@@ -61,7 +61,7 @@ const App: React.FC = () => {
         localStorage.setItem("customFonts", JSON.stringify(customFonts));
     }, [customFonts]);
 
-    const [isMobile, setIsMobile] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
         const handleResize = () => {
