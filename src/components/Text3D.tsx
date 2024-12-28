@@ -6,7 +6,7 @@ import {
     createCubeMaterial,
     createMeshBasicMaterialFromOption
 } from "../utils/textMaterial.ts";
-import { createSpacedTextGeometry, createSpacedTextGeometryOutline } from "../utils/createSpacedTextGeometry.ts";
+import { createSpacedTextGeometry, createSpacedTextGeometryOutline } from "../utils/textGeometry.ts";
 
 interface Text3DProps {
     content: string;
@@ -77,6 +77,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
 
     const outlineMaterial = useMemo(() =>
             createMeshBasicMaterialFromOption(opts.materials.outline, false, [1, 1], [1, 1], [0, 0], { side: THREE.BackSide }),
+            //createLinePointMaterial(),
         [opts.materials]
     );
 

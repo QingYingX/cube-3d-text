@@ -253,6 +253,9 @@ export const createSpacedTextGeometryOutline = ({
         offsetX += charWidth + letterSpacing * spacing;
     }
 
+    // 再次修复在面内部的孔，从而避免无效的描边
+    const fixedAllShapes = allShapes.filter(shape => computeShapeArea(shape, curveSegments) > 0);
+
     // 使用合并后的所有形状创建几何体
     const extrudeSettings: THREE.ExtrudeGeometryOptions = {
         depth: height + outlineWidth * 2,
@@ -262,7 +265,7 @@ export const createSpacedTextGeometryOutline = ({
         bevelSegments: curveSegments
     };
 
-    const extrudedGeometry = new THREE.ExtrudeGeometry(allShapes, extrudeSettings);
+    const extrudedGeometry = new THREE.ExtrudeGeometry(fixedAllShapes, extrudeSettings);
     extrudedGeometry.center(); // 根据需要进行居中
 
     return extrudedGeometry;

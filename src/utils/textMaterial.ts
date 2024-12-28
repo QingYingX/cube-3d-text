@@ -46,7 +46,7 @@ const createGradientTexture = (
 export const createMeshStandardMaterialFromOption = (
     option: TextMaterialOption,
     reverseGradient: boolean = false,
-    extra: { [key: string]: any } = {}
+    extra: { [key: string]: unknown } = {}
 ) : THREE.MeshStandardMaterial => {
     const roughness = 1.0;  // 粗糙度
     if (option.mode == 'color') {
@@ -64,13 +64,21 @@ export const createMeshStandardMaterialFromOption = (
     }
 }
 
+// Only for test
+export function createLinePointMaterial(): THREE.MeshBasicMaterial {
+    return new THREE.MeshBasicMaterial({
+        color: 0xff0000,
+        wireframe: true
+    });
+}
+
 export const createMeshBasicMaterialFromOption = (
     option: TextMaterialOption,
     reverseGradient: boolean = false,
     repeatScale: [number, number] = [1, 1],
     offsetScale: [number, number] = [1, 1],
     extraOffset: [number, number] = [0, 0],
-    extra: { [key: string]: any } = {}
+    extra: { [key: string]: unknown } = {}
 ) : THREE.MeshBasicMaterial => {
     if (option.mode == 'color') {
         return new THREE.MeshBasicMaterial({ color: option.color, ...extra });
