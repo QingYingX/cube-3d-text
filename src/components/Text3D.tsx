@@ -75,9 +75,9 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
         });
     }, [content, opts.size, opts.depth, font, opts.letterSpacing, opts.spacingWidth, opts.outlineWidth, height]);
 
-    const outlineMaterial = useMemo(() =>
-            createMeshBasicMaterialFromOption(opts.materials.outline, false, [1, 1], [1, 1], [0, 0], { side: THREE.BackSide }),
-            //createLinePointMaterial(),
+    const outlineMaterial = useMemo(
+        () => createMeshBasicMaterialFromOption(opts.materials.outline, false, [1, 1], [1, 1], [0, 0], { side: THREE.BackSide, depthTest: false }),
+        //createLinePointMaterial(),
         [opts.materials]
     );
 
@@ -124,9 +124,19 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
 
     }, [geometry]);
 
-    // 创建主网格
-    const mainMesh = useMemo(() => new THREE.Mesh(geometry, textMaterial), [geometry, textMaterial]);
-    const outlineMesh = useMemo(() => new THREE.Mesh(geometryOutline, outlineMaterial), [geometryOutline, outlineMaterial]);
+    // 主网格
+    const mainMesh = useMemo(() => {
+        const mesh = new THREE.Mesh(geometry, textMaterial);
+        mesh.renderOrder = 2;
+        return mesh;
+    }, [geometry, textMaterial]);
+
+    // 描边网格
+    const outlineMesh = useMemo(() => {
+        const mesh = new THREE.Mesh(geometryOutline, outlineMaterial);
+        mesh.renderOrder = 1;
+        return mesh;
+    }, [geometryOutline, outlineMaterial]);
 
     // 创建一个组包含主网格
     const group = useMemo(() => {
