@@ -236,7 +236,7 @@ const App: React.FC = () => {
                         optionSelectedBg: 'rgba(0, 0, 0, 0.12)',
                     },
                     Form: {
-                        itemMarginBottom: 16
+                        itemMarginBottom: 12
                     },
                 },
             }}
