@@ -1,5 +1,5 @@
 import { FC, useRef, useState } from "react";
-import { Form, Input, Select, Slider, Modal, Button, Flex } from "antd";
+import { Form, Input, Select, Slider, Modal, Button, Flex, Tag, Tooltip } from "antd";
 import { CameraOptions } from "../types/text";
 import { useLanguage } from "../language.tsx";
 import { convertTTFtoFaceTypeJson as convertToFaceTypeJson, ConvertResult } from "../utils/ttfConverter.ts";
@@ -8,7 +8,7 @@ import { useMessage } from "../contexts/MessageContext.tsx";
 import {
     DeleteOutlined,
 } from "@ant-design/icons";
-import { builtinFontsMap } from "../utils/fonts.ts";
+import { builtinFontsLicence, builtinFontsMap, FontLicenceInfo } from "../utils/fonts.ts";
 
 // 让父组件传进来的一些状态和方法通过 props 传给此组件
 interface CameraSettingsPanelProps {
@@ -96,26 +96,38 @@ const SceneAndCameraSettingsPanel: FC<CameraSettingsPanelProps> = ({
         });
     };
 
-    const fontOptions = Object.keys(fontsMap).map((fontName) => ({
-        label: (
-            <Flex justify={'space-between'} align={'center'}>
-                <span>{fontName}</span>
-                {!builtinFontsMap[fontName] && (
-                    <Button
-                        size="small"
-                        type="text"
-                        icon={<DeleteOutlined style={{ opacity: 0.5 }} />}
-                        onClick={(e) => {
-                            e.stopPropagation(); // 防止触发 Select 下拉收起
-                            handleDeleteFont(fontName);
-                        }}
-                    >
-                    </Button>
-                )}
-            </Flex>
-        ),
-        value: fontName,
-    }));
+    const fontOptions = Object.keys(fontsMap).map((fontName) => {
+        const licenseInfo: FontLicenceInfo | undefined = builtinFontsLicence[fontName];
+        return {
+            label: (
+                <Flex justify={'space-between'} align={'center'}>
+                    <Flex gap={'small'} align={'center'}>
+                        <span>{fontName}</span>
+                        {licenseInfo && (
+                            <Tooltip 
+                                title={ <div dangerouslySetInnerHTML={{ __html: gLang(licenseInfo.tagTooltip) }} />}
+                            >
+                                <Tag color={licenseInfo.tagColor}>{gLang(licenseInfo.tag)}</Tag>
+                            </Tooltip>
+                        )}
+                    </Flex>
+                    {!builtinFontsMap[fontName] && (
+                        <Button
+                            size="small"
+                            type="text"
+                            icon={<DeleteOutlined style={{ opacity: 0.5 }} />}
+                            onClick={(e) => {
+                                e.stopPropagation(); // 防止触发 Select 下拉收起
+                                handleDeleteFont(fontName);
+                            }}
+                        >
+                        </Button>
+                    )}
+                </Flex>
+            ),
+            value: fontName,
+        }
+    });
 
     return (
         <>

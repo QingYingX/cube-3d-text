@@ -82,6 +82,14 @@ export const languageConfig: Readonly<LanguageConfig> = {
             nameInput: "请输入字体名称（用于显示在字体列表里的名称）",
             success: "字体添加成功",
             failed: "字体添加失败（详细原因请看控制台）",
+        },
+        fontLicence: {
+            netease: "限制商用",
+            neteaseTooltip: "商用限制（由于网易已购买商用授权并用于《我的世界》游戏，您可在网易《我的世界》游戏的内部使用）<br>个人用途请遵循<a href=\"https://www.hanyi.com.cn/faq-doc-1\" target=\"_blank\">《汉仪字库个人非商用须知》</a><br>商用请购买商用授权 <a href=\"https://www.hanyi.com.cn/license\" target=\"_blank\">https://www.hanyi.com.cn/license</a>",
+            sil: "开放许可证",
+            minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>该字体依据 <a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。",
+            fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>该字体依据 <a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。",
+            smileyTooltip: "Copyright (c) 2022--2024, atelierAnchor <https://atelier-anchor.com><br>该字体依据 <a href=\"https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。"
         }
     },
     en_US: {
@@ -152,6 +160,14 @@ export const languageConfig: Readonly<LanguageConfig> = {
             nameInput: "Please input the font name",
             success: "Font added successfully",
             failed: "Font adding failed (please check the console for more details)",
+        },
+        fontLicence: {
+            netease: "Limitation",
+            neteaseTooltip: "Commercial use is restricted, only for internal use of NetEase games",
+            sil: "SIL",
+            minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\">https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5</a>",
+            fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\">https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL</a>",
+            smileyTooltip: "Smiley Sans © 2022--2024, atelierAnchor <https://atelier-anchor.com><br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE\" target=\"_blank\">https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE</a>"
         }
     },
     ja_JP: {
@@ -222,6 +238,14 @@ export const languageConfig: Readonly<LanguageConfig> = {
             nameInput: "フォント名を入力してください",
             success: "フォントが追加されました",
             failed: "フォントの追加に失敗しました（詳細はコンソールを確認してください）"
+        },
+        fontLicence: {
+            netease: "制限",
+            neteaseTooltip: "商用利用は制限されており、NetEaseゲームの内部利用のみです",
+            sil: "SIL",
+            minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\">こちら</a>でご覧いただけます。",
+            fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\">こちら</a>でご覧いただけます。",
+            smileyTooltip: "Smiley Sans © 2022--2024, atelierAnchor <https://atelier-anchor.com><br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE\" target=\"_blank\">こちら</a>でご覧いただけます。"
         }
     },
 };
