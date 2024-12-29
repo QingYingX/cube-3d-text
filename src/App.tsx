@@ -13,7 +13,8 @@ import {
     Typography,
     Tabs,
     Card,
-    Popover
+    Popover,
+    Modal
 } from "antd";
 import {
     AppstoreOutlined,
@@ -193,6 +194,28 @@ const App: React.FC = () => {
         ]);
     }
 
+    // 国内镜像加速站
+    const [chinaMirrorAlertModal, setChinaMirrorAlertModal] = useState(false);
+
+    useEffect(() => {
+        if (window.location.hostname === '3dtext.easecation.net') {
+            const hideChinaMirrorAlertUntil = localStorage.getItem('hideChinaMirrorAlertUntil');
+            if (hideChinaMirrorAlertUntil && parseInt(hideChinaMirrorAlertUntil) > Date.now()) {
+                return;
+            }
+            fetch('https://api.ip.sb/geoip')
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.country_code === 'CN') {
+                        setChinaMirrorAlertModal(true);
+                    }
+                })
+                .catch((err) => {
+                    console.error('IP 查询失败', err);
+                });
+        }
+    }, []);
+
     // 手机端交互
 
     const [tabActiveKey, setTabActiveKey] = useState('1');
@@ -242,6 +265,22 @@ const App: React.FC = () => {
             }}
         >
             <MessageProvider>
+                <Modal
+                    title="提示"
+                    open={chinaMirrorAlertModal}
+                    okText="🚀 立即前往"
+                    width={400}
+                    onOk={() => {
+                        window.location.href = 'https://3dt.easecation.net';
+                    }}
+                    cancelText="7 天内不再显示"
+                    onCancel={() => {
+                        setChinaMirrorAlertModal(false);
+                        localStorage.setItem('hideChinaMirrorAlertUntil', String(Date.now() + 7 * 24 * 60 * 60 * 1000));
+                    }}
+                >
+                    🚀 国内用户推荐访问国内镜像以获得极速体验～
+                </Modal>
                 {/* 手机端场景和镜头设置*/}
                 {isMobile && (
                     <Popover
