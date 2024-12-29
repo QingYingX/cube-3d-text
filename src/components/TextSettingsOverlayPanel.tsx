@@ -38,8 +38,27 @@ const TextSettingsOverlayPanel: React.FC<TextSettingsOverlayPanelProps> = (props
                         }}
                     >
                         <Flex gap={'small'} vertical>
-                            <img src={info.preview} alt={info.name} height={32} width="auto" style={{ marginTop: 8, marginBottom: 0 }} />
-                            {gLang(info.name)}
+                            <div style={{
+                                marginTop: 8,
+                                width: '100%',
+                                height: 32,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}>
+                                <img
+                                    src={info.preview}
+                                    alt={info.name}
+                                    style={{
+                                        height: '100%',
+                                        width: 'auto',
+                                        objectFit: 'contain'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                {gLang(info.name)}
+                            </div>
                         </Flex>
                     </Button>
                 ))}

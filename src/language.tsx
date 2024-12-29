@@ -182,9 +182,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
         overlay: {
             title: "Overlay Effect",
             none: "None",
-            highlightBottom: "Highlight Buttom",
+            highlightBottom: "Highlight Bottom",
             highlightTop: "Highlight Top",
-            highlightTopBottom: "Highlight Top Buttom",
+            highlightTopBottom: "Highlight Both",
             highlightInnerStroke: "Inner Stroke",
             highlightShine: "Shine",
             highlightGlass: "Glass (Tempered)"
