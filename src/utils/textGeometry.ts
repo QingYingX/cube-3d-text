@@ -135,6 +135,47 @@ export const createSpacedTextGeometry = ({
     return mergedGeometry;
 };
 
+export function assignFrontUV(geometry: THREE.BufferGeometry) {
+    // 确保 geometry 有 boundingBox
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox!;
+    const size = new THREE.Vector3();
+    box.getSize(size); // (width, height, depth)
+
+    // 如果 geometry 没有 uv 属性，需要创建一个空的
+    let uvAttr = geometry.getAttribute("uv") as THREE.BufferAttribute;
+    if (!uvAttr) {
+        const positionsCount = geometry.getAttribute("position").count;
+        const uvArray = new Float32Array(positionsCount * 2);
+        uvAttr = new THREE.BufferAttribute(uvArray, 2);
+        geometry.setAttribute("uv", uvAttr);
+    }
+
+    const posAttr = geometry.getAttribute("position") as THREE.BufferAttribute;
+    const normalAttr = geometry.getAttribute("normal") as THREE.BufferAttribute;
+
+    for (let i = 0; i < posAttr.count; i++) {
+        const nz = normalAttr.getZ(i);
+
+        const x = posAttr.getX(i);
+        const y = posAttr.getY(i);
+
+        // 判断是否是“前面”
+        // 这里简单用 nz>0.9 当作正面
+        if (nz > 0.9) {
+            // 将 (x,y) 投影到 boundingBox 的 [0,1] 区域
+            const u = (x - box.min.x) / size.x;
+            const v = (y - box.min.y) / size.y;
+            uvAttr.setXY(i, u, v);
+        } else {
+            // 如果不是正面，可以随便设置，比如 0,0
+            uvAttr.setXY(i, 0, 0);
+        }
+    }
+
+    uvAttr.needsUpdate = true;
+}
+
 const OFFSET_SCALE = 1000; // 为了提高精度，进行坐标缩放
 
 /**
@@ -269,4 +310,135 @@ export const createSpacedTextGeometryOutline = ({
     extrudedGeometry.center(); // 根据需要进行居中
 
     return extrudedGeometry;
+};
+
+export function createTextShapes2D(params: {
+    text: string;
+    font: Font;
+    letterSpacing?: number;
+    spacingWidth?: number;
+}): {
+    totalWidth: number;
+    totalHeight: number;
+    shapes: THREE.Shape[]
+} {
+    const {
+        text,
+        font,
+        letterSpacing = 0,
+        spacingWidth = 0.2,
+    } = params;
+
+    const size = 1;
+
+    const shapes: THREE.Shape[] = [];
+    let offsetX = 0;
+    const spacing = size * 0.12;
+
+    // 1. 生成所有字符形状
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === " ") {
+            offsetX += size * spacingWidth + letterSpacing * spacing;
+            continue;
+        }
+
+        const charShapes = font.generateShapes(char, size);
+        charShapes.forEach((shape) => {
+            const translatedPoints = shape.getPoints().map(p =>
+                new THREE.Vector2(p.x + offsetX, p.y)
+            );
+            const translatedShape = new THREE.Shape(translatedPoints);
+
+            if (shape.holes?.length > 0) {
+                translatedShape.holes = shape.holes.map(hole => {
+                    const translatedHolePoints = hole.getPoints().map(p =>
+                        new THREE.Vector2(p.x + offsetX, p.y)
+                    );
+                    return new THREE.Path(translatedHolePoints);
+                });
+            }
+            shapes.push(translatedShape);
+        });
+
+        const charGeometry = new THREE.ShapeGeometry(charShapes);
+        charGeometry.computeBoundingBox();
+        const charWidth = charGeometry.boundingBox
+            ? charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x
+            : size;
+        offsetX += charWidth + letterSpacing * spacing;
+    }
+
+    // 2. 创建完整几何体计算精确尺寸
+    const completeGeometry = new THREE.ShapeGeometry(shapes);
+    completeGeometry.computeBoundingBox();
+    
+    const totalWidth = completeGeometry.boundingBox 
+        ? completeGeometry.boundingBox.max.x - completeGeometry.boundingBox.min.x 
+        : 0;
+    const totalHeight = completeGeometry.boundingBox 
+        ? completeGeometry.boundingBox.max.y - completeGeometry.boundingBox.min.y 
+        : size;
+
+    // 得到最左上角的点，然后将其他所有点都偏移
+    const leftTop = completeGeometry.boundingBox ? completeGeometry.boundingBox.min : new THREE.Vector3();
+    shapes.forEach(shape => {
+        const translatedPoints = shape.getPoints().map(p => 
+            new THREE.Vector2(p.x - leftTop.x, p.y - leftTop.y)
+        );
+        shape.curves = [];
+        shape.moveTo(translatedPoints[0].x, translatedPoints[0].y);
+        for (let i = 1; i < translatedPoints.length; i++) {
+            shape.lineTo(translatedPoints[i].x, translatedPoints[i].y);
+        }
+        // 孔洞
+        if (shape.holes && shape.holes.length > 0) {
+            shape.holes.forEach(hole => {
+                const translatedHolePoints = hole.getPoints().map(p => 
+                    new THREE.Vector2(p.x - leftTop.x, p.y - leftTop.y)
+                );
+                hole.curves = [];
+                hole.moveTo(translatedHolePoints[0].x, translatedHolePoints[0].y);
+                for (let i = 1; i < translatedHolePoints.length; i++) {
+                    hole.lineTo(translatedHolePoints[i].x, translatedHolePoints[i].y);
+                }
+            });
+        }
+    });
+
+    return { shapes, totalWidth, totalHeight };
+}
+
+export const shapeToCanvasPath = (shape: THREE.Shape): Path2D => {
+    const path = new Path2D();
+
+    // 绘制主轮廓
+    shape.curves.forEach((curve, i) => {
+        const points = curve.getPoints(12);
+        points.forEach((point, j) => {
+            if (i === 0 && j === 0) {
+                path.moveTo(point.x, point.y);
+            } else {
+                path.lineTo(point.x, point.y);
+            }
+        });
+    });
+
+    // 绘制孔洞
+    if (shape.holes && shape.holes.length > 0) {
+        shape.holes.forEach(hole => {
+            hole.curves.forEach((curve, i) => {
+                const points = curve.getPoints(12);
+                points.forEach((point, j) => {
+                    if (i === 0 && j === 0) {
+                        path.moveTo(point.x, point.y);
+                    } else {
+                        path.lineTo(point.x, point.y);
+                    }
+                });
+            });
+        });
+    }
+
+    return path;
 };
