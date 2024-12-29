@@ -140,32 +140,39 @@ export const overlayRendererShine: OverlayRenderer = (ctx, _, width, height) => 
 export interface OverlayRendererInfo {
     name: string;
     renderer: OverlayRenderer;
+    preview: string;
 };
 
 export const builtinOverlayRenderers: OverlayRendererInfo[] = [
     {
         name: "overlay.highlightTop",
         renderer: overlayRendererHighlightUp,
+        preview: "/overlay-preview/highlight-top.png",
     },
     {
-        name: "overlay.highlightButtom",
+        name: "overlay.highlightBottom",
         renderer: overlayRendererHighlightDown,
+        preview: "/overlay-preview/highlight-bottom.png",
     },
     {
-        name: "overlay.highlightTopButtom",
+        name: "overlay.highlightTopBottom",
         renderer: overlayRendererHighlightUpDown,
+        preview: "/overlay-preview/highlight-top-bottom.png",
     },
     {
         name: "overlay.highlightInnerStroke",
         renderer: overlayRendererInnerStroke,
+        preview: "/overlay-preview/inner-stroke.png",
     },
     {
         name: "overlay.highlightShine",
         renderer: overlayRendererShine,
+        preview: "/overlay-preview/shine.png",
     },
     {
         name: "overlay.highlightGlass",
         renderer: overlayRendererGlass,
+        preview: "/overlay-preview/glass.png",
     }
 ];
 

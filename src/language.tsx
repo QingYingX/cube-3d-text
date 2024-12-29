@@ -94,9 +94,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
         overlay: {
             title: "叠加效果",
             none: "无",
-            highlightButtom: "底部高亮",
+            highlightBottom: "底部高亮",
             highlightTop: "顶部高亮",
-            highlightTopButtom: "上下高亮",
+            highlightTopBottom: "上下高亮",
             highlightInnerStroke: "内描边",
             highlightShine: "光泽",
             highlightGlass: "玻璃(温和)"
@@ -182,9 +182,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
         overlay: {
             title: "Overlay Effect",
             none: "None",
-            highlightButtom: "Highlight Buttom",
+            highlightBottom: "Highlight Buttom",
             highlightTop: "Highlight Top",
-            highlightTopButtom: "Highlight Top Buttom",
+            highlightTopBottom: "Highlight Top Buttom",
             highlightInnerStroke: "Inner Stroke",
             highlightShine: "Shine",
             highlightGlass: "Glass (Tempered)"
@@ -270,9 +270,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
         overlay: {
             title: "オーバーレイ効果",
             none: "なし",
-            highlightButtom: "下部ハイライト",
+            highlightBottom: "下部ハイライト",
             highlightTop: "上部ハイライト",
-            highlightTopButtom: "上部下部ハイライト",
+            highlightTopBottom: "上部下部ハイライト",
             highlightInnerStroke: "内部ストローク",
             highlightShine: "輝き",
             highlightGlass: "ガラス（強化）"

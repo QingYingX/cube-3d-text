@@ -250,6 +250,7 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             resetCamera: () => {
                 orbitRef.current?.reset();
                 camera.position.set(0, -20, 50);
+                //camera.position.set(0, 0, 50);
                 camera.lookAt(0, 0, 0);
                 camera.updateProjectionMatrix();
             },

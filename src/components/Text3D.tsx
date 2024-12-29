@@ -150,7 +150,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
         const grp = new THREE.Group();
         grp.add(mainMesh);
         // overlayMesh，用于实现overlay的材质
-        if (opts.overlay) {
+        if (content.length > 0 && opts.overlay) {
             const overlayMesh = mainMesh.clone();
             overlayMesh.geometry = mainMesh.geometry.clone();
             if (overlayMaterial) overlayMesh.material = overlayMaterial;
@@ -162,7 +162,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
         grp.position.set(...position);
         grp.rotation.set(...rotation);
         return grp;
-    }, [mainMesh, opts.overlay, outlineMesh, overlayMaterial, position, rotation]);
+    }, [content.length, mainMesh, opts.overlay, outlineMesh, overlayMaterial, position, rotation]);
 
     return <>
         <primitive object={group} ref={ref} />

@@ -14,23 +14,33 @@ const TextSettingsOverlayPanel: React.FC<TextSettingsOverlayPanelProps> = (props
 
     return (
         <Card size={'small'}>
-            <Flex gap={'small'} vertical>
+            <Flex gap={'small'} wrap>
                 <Button
                     block
                     type={overlay === undefined ? 'primary' : undefined}
                     ghost={overlay === undefined}
+                    style={{
+                        height: 'auto'
+                    }}
                     onClick={() => setOverlay(undefined)}
                 >
                     {gLang('overlay.none')}
                 </Button>
                 {builtinOverlayRenderers.map((info) => (
                     <Button
-                        block
                         type={overlay && overlay.name === info.name ? 'primary' : undefined}
                         ghost={overlay && overlay.name === info.name}
                         onClick={() => setOverlay(info)}
+                        style={{
+                            height: 'auto',
+                            minWidth: '120px',
+                            flex: '1 1 auto'
+                        }}
                     >
-                        {gLang(info.name)}
+                        <Flex gap={'small'} vertical>
+                            <img src={info.preview} alt={info.name} height={32} width="auto" style={{ marginTop: 8, marginBottom: 0 }} />
+                            {gLang(info.name)}
+                        </Flex>
                     </Button>
                 ))}
             </Flex>
