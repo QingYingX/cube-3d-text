@@ -6,6 +6,7 @@ import TextSettingsMaterialPanel from "./TextSettingsMaterialPanel.tsx";
 import TextSettingsMaterialPresets from "./TextSettingsMaterialPresets.tsx";
 import { presetMaterials } from "../presetMaterials.ts";
 import { useLanguage } from "../language.tsx";
+import TextSettingsOverlayPanel from "./TextSettingsOverlayPanel.tsx";
 
 interface TextSettingsPanelProps {
     text: string;
@@ -213,6 +214,12 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                         />
                     )}
                 </Flex>
+            </Form.Item>
+            <Form.Item label={gLang('overlay.title')} layout="vertical">
+                <TextSettingsOverlayPanel
+                    overlay={textOptions.overlay}
+                    setOverlay={(overlay) => onTextOptionsChange({...textOptions, overlay})}
+                />
             </Form.Item>
         </>
     );

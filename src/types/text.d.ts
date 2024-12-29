@@ -1,3 +1,5 @@
+import { OverlayRendererInfo } from "../utils/overlay";
+
 export interface Text3DData {
     content: string;
     opts: TextOptions;
@@ -17,6 +19,7 @@ export interface TextOptions {
     z: number;
     rotY: number
     materials: TextMaterials;
+    overlay?: OverlayRendererInfo;
     outlineWidth: number;
     letterSpacing: number;
     spacingWidth: number;

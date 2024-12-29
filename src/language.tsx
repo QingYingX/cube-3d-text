@@ -90,6 +90,16 @@ export const languageConfig: Readonly<LanguageConfig> = {
             minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>该字体依据 <a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。",
             fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>该字体依据 <a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。",
             smileyTooltip: "Copyright (c) 2022--2024, atelierAnchor <https://atelier-anchor.com><br>该字体依据 <a href=\"https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。"
+        },
+        overlay: {
+            title: "叠加效果",
+            none: "无",
+            highlightButtom: "底部高亮",
+            highlightTop: "顶部高亮",
+            highlightTopButtom: "上下高亮",
+            highlightInnerStroke: "内描边",
+            highlightShine: "光泽",
+            highlightGlass: "玻璃(温和)"
         }
     },
     en_US: {
@@ -168,6 +178,16 @@ export const languageConfig: Readonly<LanguageConfig> = {
             minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\">https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5</a>",
             fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\">https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL</a>",
             smileyTooltip: "Smiley Sans © 2022--2024, atelierAnchor <https://atelier-anchor.com><br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE\" target=\"_blank\">https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE</a>"
+        },
+        overlay: {
+            title: "Overlay Effect",
+            none: "None",
+            highlightButtom: "Highlight Buttom",
+            highlightTop: "Highlight Top",
+            highlightTopButtom: "Highlight Top Buttom",
+            highlightInnerStroke: "Inner Stroke",
+            highlightShine: "Shine",
+            highlightGlass: "Glass (Tempered)"
         }
     },
     ja_JP: {
@@ -246,6 +266,16 @@ export const languageConfig: Readonly<LanguageConfig> = {
             minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\">こちら</a>でご覧いただけます。",
             fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\">こちら</a>でご覧いただけます。",
             smileyTooltip: "Smiley Sans © 2022--2024, atelierAnchor <https://atelier-anchor.com><br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE\" target=\"_blank\">こちら</a>でご覧いただけます。"
+        },
+        overlay: {
+            title: "オーバーレイ効果",
+            none: "なし",
+            highlightButtom: "下部ハイライト",
+            highlightTop: "上部ハイライト",
+            highlightTopButtom: "上部下部ハイライト",
+            highlightInnerStroke: "内部ストローク",
+            highlightShine: "輝き",
+            highlightGlass: "ガラス（強化）"
         }
     },
 };

@@ -4,6 +4,7 @@ import { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import * as ClipperLib from 'clipper-lib';
+import { OFFSET_SCALE, offsetShape } from "./offsetShape";
 
 /**
  * 计算单个形状的有向面积（不包括内洞）
@@ -175,36 +176,6 @@ export function assignFrontUV(geometry: THREE.BufferGeometry) {
 
     uvAttr.needsUpdate = true;
 }
-
-const OFFSET_SCALE = 1000; // 为了提高精度，进行坐标缩放
-
-/**
- * 对 THREE.Shape 进行膨胀操作
- * @param shape THREE.Shape 对象
- * @param offset 膨胀量，正值向外膨胀，负值向内收缩
- * @returns 膨胀后的 THREE.Shape 数组
- */
-const offsetShape = (shape: THREE.Shape, offset: number): THREE.Shape[] => {
-    // 将 THREE.Shape 转换为 ClipperLib.Path
-    const clipperPath: ClipperLib.Path = shape.getPoints().map(p => ({
-        X: Math.round(p.x * OFFSET_SCALE),
-        Y: Math.round(p.y * OFFSET_SCALE)
-    }));
-
-    const co = new ClipperLib.ClipperOffset();
-    co.AddPath(clipperPath, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon);
-
-    const solution: ClipperLib.Paths = [];
-    co.Execute(solution, offset * OFFSET_SCALE);
-
-    // 将膨胀后的路径转换回 THREE.Shape
-    const expandedShapes: THREE.Shape[] = solution.map(path => {
-        const points = path.map(p => new THREE.Vector2(p.X / OFFSET_SCALE, p.Y / OFFSET_SCALE));
-        return new THREE.Shape(points);
-    });
-
-    return expandedShapes;
-};
 
 interface CreateSpacedTextOutlineGeometryOptions {
     text: string;
@@ -408,37 +379,3 @@ export function createTextShapes2D(params: {
 
     return { shapes, totalWidth, totalHeight };
 }
-
-export const shapeToCanvasPath = (shape: THREE.Shape): Path2D => {
-    const path = new Path2D();
-
-    // 绘制主轮廓
-    shape.curves.forEach((curve, i) => {
-        const points = curve.getPoints(12);
-        points.forEach((point, j) => {
-            if (i === 0 && j === 0) {
-                path.moveTo(point.x, point.y);
-            } else {
-                path.lineTo(point.x, point.y);
-            }
-        });
-    });
-
-    // 绘制孔洞
-    if (shape.holes && shape.holes.length > 0) {
-        shape.holes.forEach(hole => {
-            hole.curves.forEach((curve, i) => {
-                const points = curve.getPoints(12);
-                points.forEach((point, j) => {
-                    if (i === 0 && j === 0) {
-                        path.moveTo(point.x, point.y);
-                    } else {
-                        path.lineTo(point.x, point.y);
-                    }
-                });
-            });
-        });
-    }
-
-    return path;
-};
