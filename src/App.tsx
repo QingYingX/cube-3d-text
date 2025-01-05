@@ -497,7 +497,7 @@ const App: React.FC = () => {
                         </Flex>
 
                         {/*顶部悬浮*/}
-                        <Flex style={{ position: "absolute", top: 16, zIndex: 1, width: "100%", pointerEvents: "none" }} justify={'center'}>
+                        <Flex style={{ position: "absolute", top: 16, zIndex: 1, width: "100%", pointerEvents: "none", left: 0 }} justify={'center'}>
                             {lastWorkshop && (
                                 <Alert
                                     message={gLang('lastSaved.message', { count: lastWorkshop.texts.length })}
