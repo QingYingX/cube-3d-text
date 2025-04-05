@@ -12,7 +12,8 @@ import customFontsStore from "../utils/localForageInstance.ts";
 
 interface ThreeSceneProps {
     texts: Text3DData[];
-    fontUrl: string;
+    globalFontId: string;
+    fontsMap: Record<string, string>;
     globalTextureYOffset: number;
 }
 
@@ -22,7 +23,7 @@ export interface ThreeSceneHandle {
     groupRef: React.RefObject<THREE.Group>;
 }
 
-const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontUrl, globalTextureYOffset }, ref) => {
+const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, globalFontId, fontsMap, globalTextureYOffset }, ref) => {
 
     const groupRef = useRef<THREE.Group>(null);
 
@@ -34,58 +35,88 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
 
     const messageApi = useMessage();
 
-    const [font, setFont] = useState<Font | null>(null);
+    // 存储加载的字体，key是fontId
+    const [loadedFonts, setLoadedFonts] = useState<Record<string, Font>>({});
 
     useEffect(() => {
-        if (cachedFonts[fontUrl]) {
-            setFont(cachedFonts[fontUrl]);
-            return;
-        }
-        // 加载字体
+        // 收集需要加载的所有字体ID
+        const fontsToLoad = new Set<string>();
+        fontsToLoad.add(globalFontId); // 全局字体始终需要加载
+        
+        // 收集每个文本的特定字体
+        texts.forEach(text => {
+            if (text.fontId && fontsMap[text.fontId]) {
+                fontsToLoad.add(text.fontId);
+            }
+        });
+        
+        // 开始加载每个需要的字体
         const fontLoader = new FontLoader();
-        if (fontUrl.startsWith("custom:")) {
-            // 从本地存储加载字体
-            customFontsStore.getItem(fontUrl.replace("custom:", "")).then(fontData => {
-                if (!fontData || typeof fontData !== "string") {
-                    return;
-                }
-                const fontJson = JSON.parse(fontData);
-                const font = fontLoader.parse(fontJson);
-                setFont(font);
-                cachedFonts[fontUrl] = font;
-            });
-        } else {
-            // 从网络加载字体
-            const startTime = Date.now();
-            fontLoader.load(
-                fontUrl,
-                (font) => {
-                    setFont(font);
+        
+        fontsToLoad.forEach(fontId => {
+            const fontUrl = fontsMap[fontId];
+            if (!fontUrl) return;
+            
+            // 如果字体已缓存，直接使用
+            if (cachedFonts[fontUrl]) {
+                setLoadedFonts(prev => ({
+                    ...prev,
+                    [fontId]: cachedFonts[fontUrl]
+                }));
+                return;
+            }
+            
+            // 加载自定义字体或网络字体
+            if (fontUrl.startsWith("custom:")) {
+                // 从本地存储加载字体
+                customFontsStore.getItem(fontUrl.replace("custom:", "")).then(fontData => {
+                    if (!fontData || typeof fontData !== "string") {
+                        return;
+                    }
+                    const fontJson = JSON.parse(fontData);
+                    const font = fontLoader.parse(fontJson);
+                    setLoadedFonts(prev => ({
+                        ...prev,
+                        [fontId]: font
+                    }));
                     cachedFonts[fontUrl] = font;
-                    const now = Date.now();
-                    if (now - startTime > 1000) {
-                        messageApi?.open({
-                            key: 'loadingFont',
-                            type: 'success',
-                            content: gLang('fontSuccess'),
-                            duration: 2,
-                        });
+                });
+            } else {
+                // 从网络加载字体
+                const startTime = Date.now();
+                fontLoader.load(
+                    fontUrl,
+                    (font) => {
+                        setLoadedFonts(prev => ({
+                            ...prev,
+                            [fontId]: font
+                        }));
+                        cachedFonts[fontUrl] = font;
+                        const now = Date.now();
+                        if (now - startTime > 1000) {
+                            messageApi?.open({
+                                key: `loadingFont-${fontId}`,
+                                type: 'success',
+                                content: gLang('fontSuccess'),
+                                duration: 2,
+                            });
+                        }
+                    },
+                    (progress) => {
+                        const now = Date.now();
+                        if (now - startTime > 1000) {
+                            messageApi?.open({
+                                key: `loadingFont-${fontId}`,
+                                type: 'loading',
+                                content: gLang('fontLoading') + Math.round(progress.loaded),
+                                duration: 60,
+                            });
+                        }
                     }
-                },
-                (progress) => {
-                    const now = Date.now();
-                    if (now - startTime > 1000) {
-                        messageApi?.open({
-                            key: 'loadingFont',
-                            type: 'loading',
-                            content: gLang('fontLoading') + Math.round(progress.loaded),
-                            duration: 60,
-                        });
-                    }
-                }
-            );
-        }
-    }, [fontUrl, gLang, messageApi]); // 每次 fontUrl 变化时重新加载字体
+                );
+            }
+        });
+    }, [fontsMap, globalFontId, texts, gLang, messageApi]); // 字体映射或需要的字体变化时重新加载
 
     const { scene } = useThree();
 
@@ -96,19 +127,18 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
 
     return (
         <>
-            {/* 添加光源 */}
-            {/*<ambientLight intensity={3.0}/>
-            <directionalLight
-                position={[0, 50, 50]}
-                intensity={1.0}
-                ref={(light) => light && light.lookAt(new THREE.Vector3(0, 0, 0))}
-            />*/}
-
             {/* 创建文本网格 */}
             <Suspense fallback={<Html>Loading...</Html>}>
-                {font && (
-                    <group ref={groupRef}>
-                        {texts.map((text, index) => (
+                <group ref={groupRef}>
+                    {texts.map((text, index) => {
+                        // 获取该文本应该使用的字体ID和实例
+                        const effectiveFontId = text.fontId || globalFontId;
+                        const font = loadedFonts[effectiveFontId];
+                        
+                        // 如果字体还未加载完成，不渲染该文本
+                        if (!font) return null;
+                        
+                        return (
                             <Text3D
                                 key={index}
                                 content={text.content}
@@ -118,17 +148,10 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, fontU
                                 position={[0, text.opts.y, text.opts.z]}
                                 rotation={[text.opts.rotY * (Math.PI / 180), 0, 0]}
                             />
-                        ))}
-                    </group>
-                )}
+                        );
+                    })}
+                </group>
             </Suspense>
-
-            {/* 添加描边效果 */}
-            {/*<OutlineEffect*/}
-            {/*    edgeColor={new THREE.Color(0xff0000)}*/}
-            {/*    thickness={5.0}*/}
-            {/*    outlineObjects={selectedObjects}*/}
-            {/*/>*/}
         </>
     );
 });

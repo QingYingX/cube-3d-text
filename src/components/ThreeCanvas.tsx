@@ -17,7 +17,8 @@ export interface ThreeCanvasHandle {
 interface ThreeCanvasProps {
     cameraOptions: CameraOptions;
     texts: Text3DData[];
-    fontUrl: string;
+    globalFontId: string;
+    fontsMap: Record<string, string>;
     globalTextureYOffset: number;
 }
 
@@ -41,7 +42,7 @@ interface ScreenshotProps {
 }
 
 const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref) => {
-    const { texts, cameraOptions, fontUrl, globalTextureYOffset } = props;
+    const { texts, cameraOptions, globalFontId, fontsMap, globalTextureYOffset } = props;
     const orbitRef = useRef<OrbitControlsImpl>(null);
     const threeSceneRef = useRef<ThreeSceneHandle>(null);
     const messageApi = useMessage();
@@ -303,7 +304,8 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             <ThreeScene
                 ref={threeSceneRef}
                 texts={texts}
-                fontUrl={fontUrl}
+                globalFontId={globalFontId}
+                fontsMap={fontsMap}
                 globalTextureYOffset={globalTextureYOffset}
             />
             <OrbitControls ref={orbitRef} enableDamping={false} dampingFactor={0} />

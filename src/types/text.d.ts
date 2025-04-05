@@ -5,6 +5,7 @@ export interface Text3DData {
     opts: TextOptions;
     position: [number, number, number];
     rotation: [number, number, number];
+    fontId?: string; // 新增字段：每行文字的字体ID，未设置时使用全局字体
 }
 
 export interface WorkspaceData {

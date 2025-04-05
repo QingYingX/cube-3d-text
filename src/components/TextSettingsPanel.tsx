@@ -7,29 +7,68 @@ import TextSettingsMaterialPresets from "./TextSettingsMaterialPresets.tsx";
 import { presetMaterials } from "../presetMaterials.ts";
 import { useLanguage } from "../language.tsx";
 import TextSettingsOverlayPanel from "./TextSettingsOverlayPanel.tsx";
+import { useFonts } from "../contexts/FontContext";
+import { builtinFontsLicence, builtinFontsMap } from "../utils/fonts.ts";
+import FontSelector from "./FontSelector.tsx";
 
 interface TextSettingsPanelProps {
     text: string;
     textOptions: TextOptions;
+    fontId?: string; // 新增：该文本的字体ID，undefined表示使用全局字体
+    globalFontId: string; // 新增：全局字体ID
     onTextChange: (text: string) => void;
     onTextOptionsChange: (options: TextOptions) => void;
+    onFontChange: (fontId: string | undefined) => void; // 新增：字体变更回调
 }
 
 const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
-                                                                 text,
-                                                                 textOptions,
-                                                                 onTextChange,
-                                                                 onTextOptionsChange,
-                                                             }) => {
-
+    text,
+    textOptions,
+    fontId,
+    globalFontId,
+    onTextChange,
+    onTextOptionsChange,
+    onFontChange,
+}) => {
     const { gLang } = useLanguage();
+    const { fontsMap, deleteFont } = useFonts();
     const [materialType, setMaterialType] = useState<'预设' | '自定义'>('预设');
+    
+    // 当前显示的字体值：使用文本自己的字体或显示为"全局"
+    const displayFontValue = fontId || 'global';
+    
+    // 字体变更处理
+    const handleFontChange = (value: string) => {
+        if (value === 'global') {
+            // 选择使用全局字体
+            onFontChange(undefined);
+        } else {
+            // 选择特定字体
+            onFontChange(value);
+        }
+    };
 
     return (
         <>
             <Form.Item label={gLang('content')}>
                 <Input value={text} onChange={(e) => onTextChange(e.target.value)} />
             </Form.Item>
+            
+            {/* 新增：字体选择 */}
+            <Form.Item label={gLang('textFont')} layout="vertical">
+                <FontSelector
+                    value={displayFontValue}
+                    onChange={handleFontChange}
+                    fontsMap={fontsMap}
+                    builtinFontsMap={builtinFontsMap}
+                    builtinFontsLicence={builtinFontsLicence}
+                    showUploadButton={false}
+                    onDeleteFont={deleteFont}
+                    allowGlobalFont={true}
+                    globalFontId={globalFontId}
+                />
+            </Form.Item>
+            
             <Form.Item label={`${gLang('upDownPosition')}`}>
                 <Flex gap={'small'}>
                     <Slider

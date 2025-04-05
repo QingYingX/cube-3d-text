@@ -104,7 +104,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
             highlightInnerStroke: "内描边",
             highlightShine: "光泽",
             highlightGlass: "玻璃(温和)"
-        }
+        },
+        textFont: "文字字体",
+        useGlobalFont: "使用全局字体"
     },
     en_US: {
         zh_CN: "中文",
@@ -195,7 +197,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
             highlightInnerStroke: "Inner Stroke",
             highlightShine: "Shine",
             highlightGlass: "Glass (Tempered)"
-        }
+        },
+        textFont: "Text Font",
+        useGlobalFont: "Use Global Font"
     },
     ja_JP: {
         zh_CN: "中文",
@@ -286,7 +290,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
             highlightInnerStroke: "内部ストローク",
             highlightShine: "輝き",
             highlightGlass: "ガラス（強化）"
-        }
+        },
+        textFont: "フォント",
+        useGlobalFont: "グローバルフォントを使用"
     },
 };
 
