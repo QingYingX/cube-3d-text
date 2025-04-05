@@ -118,17 +118,21 @@ export const createCubeMaterial = (
     boundingBox: THREE.Box3,
     globalTextureYOffset: number
 ): THREE.Material[] => {
-    const repeatFront = [1 / (boundingBox.max.y - boundingBox.min.y), 1 / (boundingBox.max.y - boundingBox.min.y)] as [number, number];
-    const repeatSide = [1 / (boundingBox.max.y - boundingBox.min.y), 1 / (boundingBox.max.z - boundingBox.min.z)] as [number, number];
-    //const offsetSide = [(boundingBox.max.z - boundingBox.min.z) / 2, (boundingBox.max.z - boundingBox.min.z) / 2] as [number, number];
-    const offsetSide = [1, 1] as [number, number];  // TODO: 修正偏移量
-    const extraOffset: [number, number] = [0, globalTextureYOffset];
+    const totalWidth = boundingBox.max.x - boundingBox.min.x;
+    const totalHeight = boundingBox.max.y - boundingBox.min.y;
+    const totalDepth = boundingBox.max.z - boundingBox.min.z;
+
+    const repeatFront = [totalWidth / totalHeight, 1] as [number, number];
+    const repeatUpDown = [totalHeight / totalDepth, 1] as [number, number];
+    const repeatSide = [totalHeight / totalDepth, 1] as [number, number];
+    const offsetSide = [0, globalTextureYOffset] as [number, number];
+
     return [
-        createMeshBasicMaterialFromOption(materials.right, true, repeatSide, offsetSide, extraOffset), // 右面
-        createMeshBasicMaterialFromOption(materials.left, true, repeatSide, offsetSide, extraOffset), // 左面
-        createMeshBasicMaterialFromOption(materials.up, true, repeatSide, offsetSide), // 上面
-        createMeshBasicMaterialFromOption(materials.down, true, repeatSide, offsetSide), // 下面
-        createMeshBasicMaterialFromOption(materials.front, false, repeatFront, [1, 1], extraOffset), // 前面
-        createMeshBasicMaterialFromOption(materials.back, false, repeatFront, [1, 1], extraOffset), // 后面
+        createMeshBasicMaterialFromOption(materials.right, false, repeatSide, [1, 1], offsetSide), // 右面
+        createMeshBasicMaterialFromOption(materials.left, false, repeatSide, [1, 1], offsetSide), // 左面
+        createMeshBasicMaterialFromOption(materials.up, false, repeatUpDown, [1, 1]), // 上面
+        createMeshBasicMaterialFromOption(materials.down, false, repeatUpDown, [1, 1]), // 下面
+        createMeshBasicMaterialFromOption(materials.front, false, repeatFront, [1, 1], offsetSide), // 前面
+        createMeshBasicMaterialFromOption(materials.back, false, repeatFront, [1, 1], offsetSide), // 后面
     ];
 };

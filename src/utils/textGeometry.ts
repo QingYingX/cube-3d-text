@@ -75,6 +75,62 @@ const ensureWindingOrder = (shape: THREE.Shape, curveSegments: number = 12): THR
     return shape;
 };
 
+function reassignUVByNormal(geometry: THREE.BufferGeometry): void {
+    geometry.computeBoundingBox();
+    if (!geometry.boundingBox) return;
+
+    const box = geometry.boundingBox;
+    const size = new THREE.Vector3().subVectors(box.max, box.min);
+
+    geometry.deleteAttribute('uv');
+    const uvArray = new Float32Array(geometry.attributes.position.count * 2);
+
+    const position = geometry.attributes.position;
+    const normal = geometry.attributes.normal;
+
+    for (let i = 0; i < position.count; i++) {
+        const x = position.getX(i);
+        const y = position.getY(i);
+        const z = position.getZ(i);
+
+        const nx = normal.getX(i);
+        const ny = normal.getY(i);
+        const nz = normal.getZ(i);
+
+        let u = 0, v = 0;
+
+        // 前后：Math.abs(nz) 是最大的
+        if (Math.abs(nz) >= Math.abs(nx) && Math.abs(nz) >= Math.abs(ny)) {
+            // front/back 的 uv: 用 x,y
+            u = (x - box.min.x) / size.x;
+            v = (y - box.min.y) / size.y;
+        }
+        // 上下：Math.abs(ny) 是最大的
+        else if (Math.abs(ny) >= Math.abs(nx)) {
+            // up/down 的 uv: 用 x,z
+            u = (x - box.min.x) / size.x;
+            v = (z - box.min.z) / size.z;
+        }
+        // 剩下就是左右：Math.abs(nx) 最大
+        else {
+            // left/right
+            // 原来是: u = (z - box.min.z) / size.z; v = (y - box.min.y) / size.y;
+            // 现在换成交换 y,z
+            u = (y - box.min.y) / size.y;
+            v = (z - box.min.z) / size.z;
+
+            // 如果还需要翻转方向，比如让 v = 1 - v，可以在此加一行
+            // v = 1 - v;
+            // 这样就是“交换 + 反转”的效果
+        }
+
+        uvArray[2 * i] = u;
+        uvArray[2 * i + 1] = v;
+    }
+
+    geometry.setAttribute('uv', new THREE.BufferAttribute(uvArray, 2));
+}
+
 interface CreateSpacedTextGeometryOptions {
     text: string;
     font: Font;
@@ -86,16 +142,16 @@ interface CreateSpacedTextGeometryOptions {
     letterSpacing: number;
 }
 
-export const createSpacedTextGeometry = ({
-                                             text,
-                                             font,
-                                             spacingWidth,
-                                             size,
-                                             height,
-                                             curveSegments,
-                                             bevelEnabled,
-                                             letterSpacing = 0
-                                         }: CreateSpacedTextGeometryOptions): THREE.BufferGeometry => {
+export function createSpacedTextGeometry({
+    text,
+    font,
+    spacingWidth,
+    size,
+    height,
+    curveSegments,
+    bevelEnabled,
+    letterSpacing = 0
+}: CreateSpacedTextGeometryOptions): THREE.BufferGeometry {
     const geometries: THREE.BufferGeometry[] = [];
     let offsetX = 0;
 
@@ -104,13 +160,13 @@ export const createSpacedTextGeometry = ({
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
         if (char === " ") {
-            // Handle space: set spacing based on font's space width
-            // const metrics = (font.data as ExtendedFontData).metrics;
+            // 如果是空格，根据你的 spacingWidth 处理偏移
             const spaceWidth = size * spacingWidth;
             offsetX += spaceWidth + letterSpacing * spacing;
             continue;
         }
 
+        // 创建单个字符的几何体
         const charGeometry = new TextGeometry(char, {
             font,
             size,
@@ -119,22 +175,31 @@ export const createSpacedTextGeometry = ({
             bevelEnabled
         });
 
+        // 计算单个字符的 boundingBox，以便得知它的宽度
         charGeometry.computeBoundingBox();
-        const charWidth = charGeometry.boundingBox ? charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x : size;
+        const charWidth = charGeometry.boundingBox
+            ? (charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x)
+            : size;
 
+        // 将该字符几何体平移
         charGeometry.translate(offsetX, 0, 0);
         geometries.push(charGeometry);
 
-        // Update offset for the next character
+        // 更新 offset，以便放下一个字
         offsetX += charWidth + letterSpacing * spacing;
     }
 
-    // Merge all character geometries
+    // 合并所有字符
     const mergedGeometry = mergeGeometries(geometries, false);
-    mergedGeometry.center(); // Center if needed
+
+    // （可选）居中
+    mergedGeometry.center();
+
+    // —— 关键：合并完后，重新分配 UV ——
+    reassignUVByNormal(mergedGeometry);
 
     return mergedGeometry;
-};
+}
 
 export function assignFrontUV(geometry: THREE.BufferGeometry) {
     // 确保 geometry 有 boundingBox

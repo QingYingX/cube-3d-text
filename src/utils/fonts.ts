@@ -8,10 +8,10 @@ export const builtinFontsMap: { [name: string]: string } = {
 };
 
 export const builtinFontsTextureYOffset: { [name: string]: number } = {
-    "REEJI Taiko Magic": 0.1,
-    "汉仪力量黑(简)": 0.18,
-    "Fusion Pixel 8px": 0.15,
-    "Fusion Pixel 10px": 0.115,
+    "REEJI Taiko Magic": 0,
+    "汉仪力量黑(简)": 0,
+    "Fusion Pixel 8px": 0,
+    "Fusion Pixel 10px": 0,
 }
 
 export interface FontLicenceInfo {

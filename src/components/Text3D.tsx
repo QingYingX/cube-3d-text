@@ -6,7 +6,7 @@ import {
     createCubeMaterial,
     createMeshBasicMaterialFromOption
 } from "../utils/textMaterial.ts";
-import { assignFrontUV, createSpacedTextGeometry, createSpacedTextGeometryOutline } from "../utils/textGeometry.ts";
+import { createSpacedTextGeometry, createSpacedTextGeometryOutline } from "../utils/textGeometry.ts";
 import { Html } from "@react-three/drei";
 import OverlayHelper from "./OverlayHelper.tsx";
 
@@ -33,7 +33,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
         if (!content) {
             return new THREE.BufferGeometry();
         }
-        return createSpacedTextGeometry({
+        const geo = createSpacedTextGeometry({
             text: content,
             font,
             size: opts.size,
@@ -43,6 +43,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
             letterSpacing: opts.letterSpacing,
             spacingWidth: opts.spacingWidth
         });
+        return geo;
     }, [content, opts.size, opts.depth, font, opts.letterSpacing, opts.spacingWidth]);
 
     // 获取文字几何体的高度
@@ -154,7 +155,7 @@ const Text3D = forwardRef<THREE.Group, Text3DProps>(({
             const overlayMesh = mainMesh.clone();
             overlayMesh.geometry = mainMesh.geometry.clone();
             if (overlayMaterial) overlayMesh.material = overlayMaterial;
-            assignFrontUV(overlayMesh.geometry as THREE.BufferGeometry);
+            // assignFrontUV(overlayMesh.geometry as THREE.BufferGeometry);
             overlayMesh.renderOrder = 3;
             grp.add(overlayMesh);
         }
