@@ -66,7 +66,9 @@ export const languageConfig: Readonly<LanguageConfig> = {
         fontSuccess: "字体加载完成!",
         fontLoading: "字体加载中...",
         githubRepo: "EaseCation 开源项目",
+        openProject: "打开项目",
         output: {
+            json: "保存项目（可在此工具重新打开）",
             glb: "导出 GLB 模型（包含纹理）",
             gltf: "导出 GLTF 模型",
             obj: "导出 OBJ 模型（不包含纹理）",
@@ -157,6 +159,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         fontLoading: "Loading font...",
         githubRepo: "GitHub",
         output: {
+            json: "Export Project",
             glb: "Export GLB Model",
             gltf: "Export GLTF Model",
             obj: "Export OBJ Model",
@@ -247,6 +250,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         fontLoading: "フォントを読み込み中...",
         githubRepo: "GitHub",
         output: {
+            json: "プロジェクトをエクスポート",
             glb: "GLBモデルをエクスポート",
             gltf: "GLTFモデルをエクスポート",
             obj: "OBJモデルをエクスポート",

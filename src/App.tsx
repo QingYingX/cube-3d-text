@@ -26,7 +26,8 @@ import {
     PlusOutlined,
     ReloadOutlined,
     SettingOutlined,
-    GithubOutlined
+    GithubOutlined,
+    FileTextOutlined
 } from "@ant-design/icons";
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import ThreeCanvas, { ThreeCanvasHandle } from "./components/ThreeCanvas";
@@ -34,15 +35,22 @@ import "antd/dist/reset.css";
 import { CameraOptions, Text3DData, WorkspaceData } from "./types/text";
 import TextSettingsPanel from "./components/TextSettingsPanel.tsx";
 import { materialGradientLightBlue, materialGradientMediumYellow } from "./presetMaterials.ts";
-import { MessageProvider } from "./contexts/MessageContext";
+import { MessageProvider, useMessage } from "./contexts/MessageContext";
 import { useLanguage } from "./language.tsx";
 import SceneAndCameraSettingsPanel from "./components/SceneAndCameraSettingsPanel.tsx";
 import { builtinFontsMap, builtinFontsTextureYOffset } from "./utils/fonts.ts";
+import {
+    exportWorkspace,
+    importWorkspaceFromFile,
+    saveWorkspaceToLocalStorage,
+    loadWorkspaceFromLocalStorage
+} from "./utils/workspaceIO";
 
 const { Panel } = Collapse;
 
 const App: React.FC = () => {
     const { language, setLanguage, gLang } = useLanguage();
+    const messageApi = useMessage();
 
     const [selectedFont, setSelectedFont] = useState(language === "en_US" ? "Minecraft Ten" : "Fusion Pixel 10px");
     const [customFonts, setCustomFonts] = useState<{ [fontName: string]: string }>(() => {
@@ -128,7 +136,15 @@ const App: React.FC = () => {
 
     const handleOutputOption: MenuProps['onClick'] = (e) => {
         if (threeCanvasRef.current) {
-            if (e.key === 'glb' || e.key === 'gltf' || e.key === 'obj' || e.key === 'stl') {
+            if (e.key === 'json') {
+                // 导出json
+                const workspace: WorkspaceData = {
+                    fontId: selectedFont,
+                    texts: texts
+                };
+                exportWorkspace(workspace);
+                messageApi?.success('项目已导出为JSON文件');
+            } else if (e.key === 'glb' || e.key === 'gltf' || e.key === 'obj' || e.key === 'stl') {
                 threeCanvasRef.current.exportScene(e.key);
             }
         }
@@ -142,18 +158,11 @@ const App: React.FC = () => {
 
     // 自动加载工作区
     useEffect(() => {
-        const workspaceStr = localStorage.getItem('workspace');
-        if (workspaceStr) {
-            const workspace: WorkspaceData = JSON.parse(workspaceStr);
-            // 修复一些缺失的数据（兼容旧版数据）
-            workspace.texts.forEach((text) => {
-                if (!text.opts.z) {
-                    text.opts.z = 0;
-                }
-            });
+        const workspace = loadWorkspaceFromLocalStorage(messageApi);
+        if (workspace) {
             setLastWorkshop(workspace);
         }
-    }, []);
+    }, [messageApi]);
 
     const [initTime] = useState<number>(Date.now());
 
@@ -169,9 +178,9 @@ const App: React.FC = () => {
             texts: texts
         };
         // 保存工作区数据
-        localStorage.setItem('workspace', JSON.stringify(workspace));
+        saveWorkspaceToLocalStorage(workspace, messageApi);
         setLastWorkshop(null);
-    }, [selectedFont, texts, initTime]);
+    }, [selectedFont, texts, initTime, messageApi]);
 
     const handleAddText = () => {
         setTexts([
@@ -441,6 +450,11 @@ const App: React.FC = () => {
                                     menu={{
                                         items: [
                                             {
+                                                key: 'json',
+                                                label: gLang('output.json'),
+                                                icon: <FileTextOutlined />
+                                            },
+                                            {
                                                 key: 'glb',
                                                 label: gLang('output.glb'),
                                                 icon: <AppstoreOutlined />
@@ -484,6 +498,38 @@ const App: React.FC = () => {
                                     </Typography.Text>
                                 </Button>
                             </a>
+                            <Button
+                                type={'text'}
+                                style={{ padding: "0px 12px" }}
+                                onClick={() => {
+                                    // 弹出文件选择框
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.accept = '.json';
+                                    input.onchange = (e) => {
+                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                        if (file) {
+                                            importWorkspaceFromFile(file, messageApi)
+                                                .then(workspace => {
+                                                    setSelectedFont(workspace.fontId);
+                                                    setTexts(workspace.texts);
+                                                })
+                                                .catch(error => {
+                                                    console.error('导入失败:', error);
+                                                    // 错误消息已在importWorkspaceFromFile中处理
+                                                });
+                                        }
+                                    };
+                                    input.click();
+                                }}
+                            >
+                                <Typography.Text type={'secondary'}>
+                                    <Space size={'small'}>
+                                        <FileTextOutlined />
+                                        {gLang('openProject')}
+                                    </Space>
+                                </Typography.Text>
+                            </Button>
                             <Dropdown
                                 menu={{
                                     items: [
