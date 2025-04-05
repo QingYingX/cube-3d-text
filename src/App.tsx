@@ -25,7 +25,8 @@ import {
     GlobalOutlined,
     PlusOutlined,
     ReloadOutlined,
-    SettingOutlined
+    SettingOutlined,
+    GithubOutlined
 } from "@ant-design/icons";
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import ThreeCanvas, { ThreeCanvasHandle } from "./components/ThreeCanvas";
@@ -471,8 +472,18 @@ const App: React.FC = () => {
 
                         </Flex>
 
-                        {/* 右小角悬浮 */}
+                        {/* 右下角悬浮 */}
                         <Flex style={{ position: "absolute", bottom: 8, right: 8, zIndex: 1 }}>
+                            <a href="https://github.com/EaseCation/cube-3d-text" target="_blank" rel="noopener noreferrer">
+                                <Button type={'text'} style={{ padding: "0px 12px" }}>
+                                    <Typography.Text type={'secondary'}>
+                                        <Space size={'small'}>
+                                            <GithubOutlined />
+                                            {gLang('githubRepo')}
+                                        </Space>
+                                    </Typography.Text>
+                                </Button>
+                            </a>
                             <Dropdown
                                 menu={{
                                     items: [
@@ -485,7 +496,7 @@ const App: React.FC = () => {
                                     onSelect: ({ key }) => setLanguage(key)
                                 }}
                             >
-                                <Button type={'text'}>
+                                <Button type={'text'} style={{ padding: "0px 12px" }}>
                                     <Typography.Text type={'secondary'}>
                                         <Space size={'small'}>
                                             <GlobalOutlined />

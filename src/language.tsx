@@ -65,6 +65,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         texture: "纹理",
         fontSuccess: "字体加载完成!",
         fontLoading: "字体加载中...",
+        githubRepo: "EaseCation 开源项目",
         output: {
             glb: "导出 GLB 模型（包含纹理）",
             gltf: "导出 GLTF 模型",
@@ -154,6 +155,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         texture: "Texture",
         fontSuccess: "Font loaded successfully!",
         fontLoading: "Loading font...",
+        githubRepo: "GitHub",
         output: {
             glb: "Export GLB Model",
             gltf: "Export GLTF Model",
@@ -243,6 +245,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
         texture: "テクスチャ",
         fontSuccess: "フォントが読み込まれました！",
         fontLoading: "フォントを読み込み中...",
+        githubRepo: "GitHub",
         output: {
             glb: "GLBモデルをエクスポート",
             gltf: "GLTFモデルをエクスポート",
