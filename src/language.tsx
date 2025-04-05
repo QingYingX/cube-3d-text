@@ -85,7 +85,8 @@ export const languageConfig: Readonly<LanguageConfig> = {
         },
         fontLicence: {
             netease: "限制商用",
-            neteaseTooltip: "商用限制（由于网易已购买商用授权并用于《我的世界》游戏，您可在网易《我的世界》游戏的内部使用）<br>个人用途请遵循<a href=\"https://www.hanyi.com.cn/faq-doc-1\" target=\"_blank\">《汉仪字库个人非商用须知》</a><br>商用请购买商用授权 <a href=\"https://www.hanyi.com.cn/license\" target=\"_blank\">https://www.hanyi.com.cn/license</a>",
+            hanyiTooltip: "商用限制（由于网易已购买商用授权并用于《我的世界》游戏，您可在网易《我的世界》游戏的内部使用）<br>个人用途请遵循<a href=\"https://www.hanyi.com.cn/faq-doc-1\" target=\"_blank\">《汉仪字库个人非商用须知》</a><br>商用请购买商用授权 <a href=\"https://www.hanyi.com.cn/license\" target=\"_blank\">https://www.hanyi.com.cn/license</a>",
+            ruiziTooltip: "商用限制（由于网易已购买商用授权并用于《我的世界》游戏，您可在网易《我的世界》游戏的内部使用）<br>个人用途请遵循<a href=\"http://www.reeji.com/notice.html\" target=\"_blank\">《锐字潮牌字库个人学习版用字须知》</a><br>商用请购买商用授权 <a href=\"http://www.reeji.com/license.html\" target=\"_blank\">http://www.reeji.com/license.html</a>",
             sil: "开放许可证",
             minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>该字体依据 <a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。",
             fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>该字体依据 <a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\"> SIL 开放字体许可证（SIL Open Font License，版本 1.1）</a> 授权使用。",
