@@ -174,7 +174,8 @@ export const languageConfig: Readonly<LanguageConfig> = {
         },
         fontLicence: {
             netease: "Limitation",
-            neteaseTooltip: "Commercial use is restricted, only for internal use of NetEase games",
+            hanyiTooltip: "Commercial use is restricted (NetEase has purchased commercial authorization for use in Minecraft games, you can use it within NetEase Minecraft games)<br>For personal use, please follow <a href=\"https://www.hanyi.com.cn/faq-doc-1\" target=\"_blank\">HanYi Font Library Personal Non-commercial Notice</a><br>For commercial use, please purchase a commercial license at <a href=\"https://www.hanyi.com.cn/license\" target=\"_blank\">https://www.hanyi.com.cn/license</a>",
+            ruiziTooltip: "Commercial use is restricted (NetEase has purchased commercial authorization for use in Minecraft games, you can use it within NetEase Minecraft games)<br>For personal use, please follow <a href=\"http://www.reeji.com/notice.html\" target=\"_blank\">Reeji Font Library Personal Learning Version Usage Guidelines</a><br>For commercial use, please purchase a commercial license at <a href=\"http://www.reeji.com/license.html\" target=\"_blank\">http://www.reeji.com/license.html</a>",
             sil: "SIL",
             minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\">https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5</a>",
             fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>This font is licensed under the SIL Open Font License, Version 1.1. Full license text available at <a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\">https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL</a>",
@@ -262,7 +263,8 @@ export const languageConfig: Readonly<LanguageConfig> = {
         },
         fontLicence: {
             netease: "制限",
-            neteaseTooltip: "商用利用は制限されており、NetEaseゲームの内部利用のみです",
+            hanyiTooltip: "商用利用は制限されています（NetEaseはMinecraftゲームでの使用のための商用許可を購入しており、NetEase Minecraftゲーム内での使用が可能です）<br>個人利用の場合は<a href=\"https://www.hanyi.com.cn/faq-doc-1\" target=\"_blank\">漢儀フォントライブラリ個人非商用通知</a>に従ってください<br>商用利用の場合は、<a href=\"https://www.hanyi.com.cn/license\" target=\"_blank\">https://www.hanyi.com.cn/license</a>で商用ライセンスを購入してください",
+            ruiziTooltip: "商用利用は制限されています（NetEaseはMinecraftゲームでの使用のための商用許可を購入しており、NetEase Minecraftゲーム内での使用が可能です）<br>個人利用の場合は<a href=\"http://www.reeji.com/notice.html\" target=\"_blank\">锐字フォントライブラリ個人学習版利用ガイドライン</a>に従ってください<br>商用利用の場合は、<a href=\"http://www.reeji.com/license.html\" target=\"_blank\">http://www.reeji.com/license.html</a>で商用ライセンスを購入してください",
             sil: "SIL",
             minecraftTenTooltip: "Minecraft Ten Font © 2024, Fardilizer<br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://fontstruct.com/fontstructions/license/2552125/minecraft-ten-5\" target=\"_blank\">こちら</a>でご覧いただけます。",
             fusionPixelTooltip: "Fusion Pixel © 2022, TakWolf<br>このフォントは SIL Open Font License、バージョン 1.1 でライセンスされています。完全なライセンステキストは<a href=\"https://github.com/TakWolf/fusion-pixel-font/blob/master/LICENSE-OFL\" target=\"_blank\">こちら</a>でご覧いただけます。",
