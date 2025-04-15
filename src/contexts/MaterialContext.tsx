@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { TextMaterials } from '../types/text';
 import { materialLoader } from '../utils/materialLoader';
 
@@ -39,9 +39,8 @@ export const MaterialProvider: React.FC<{ children: ReactNode }> = ({ children }
     loadedMaterials: new Map()
   });
 
-  // 加载所有材质
-  const loadMaterials = async () => {
-    // 如果已经加载了材质并且没有错误，就不再重新加载
+  // 使用 useCallback 确保函数引用稳定，避免不必要的重渲染
+  const loadMaterials = useCallback(async () => {
     if (state.collections.length > 0 && state.loadedMaterials.size > 0 && !state.error) {
       return;
     }
@@ -68,10 +67,10 @@ export const MaterialProvider: React.FC<{ children: ReactNode }> = ({ children }
         error: "无法加载材质文件"
       }));
     }
-  };
+  }, [state.collections.length, state.loadedMaterials.size, state.error]);
 
-  // 清除材质缓存
-  const clearMaterialCache = () => {
+  // 清除材质缓存 - 同样使用 useCallback 确保引用稳定
+  const clearMaterialCache = useCallback(() => {
     materialLoader.clearCache();
     setState({
       isLoading: false,
@@ -79,15 +78,20 @@ export const MaterialProvider: React.FC<{ children: ReactNode }> = ({ children }
       collections: [],
       loadedMaterials: new Map()
     });
-  };
+  }, []);
 
   // 组件首次加载时尝试加载材质
   useEffect(() => {
     loadMaterials();
+    // 空依赖数组确保只在组件挂载时执行一次
   }, []);
 
-  const value: MaterialContextType = {
-    ...state,
+  // 构建上下文值
+  const value = {
+    isLoading: state.isLoading,
+    error: state.error,
+    collections: state.collections,
+    loadedMaterials: state.loadedMaterials,
     loadMaterials,
     clearMaterialCache
   };

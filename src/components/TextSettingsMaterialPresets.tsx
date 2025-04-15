@@ -29,10 +29,11 @@ const TextSettingsMaterialPresets: React.FC<TextSettingsMaterialPresetsProps> = 
         loadMaterials 
     } = useMaterials();
 
-    // 组件挂载时加载材质
+    // 组件挂载时加载材质，但仅在首次渲染时执行
     useEffect(() => {
+        // loadMaterials 函数内部会检查是否已加载，避免重复加载
         loadMaterials();
-    }, [loadMaterials]);
+    }, []); // 空依赖数组确保只在组件挂载时执行一次
 
     const renderPreview = (material: TextMaterials) : CSSProperties => {
         const style: CSSProperties = {};
