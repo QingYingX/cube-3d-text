@@ -4,7 +4,6 @@ import { Form, Input, Slider, Segmented, Flex, InputNumber } from "antd";
 import { TextOptions } from "../types/text";
 import TextSettingsMaterialPanel from "./TextSettingsMaterialPanel.tsx";
 import TextSettingsMaterialPresets from "./TextSettingsMaterialPresets.tsx";
-import { presetMaterials } from "../presetMaterials.ts";
 import { useLanguage } from "../language.tsx";
 import TextSettingsOverlayPanel from "./TextSettingsOverlayPanel.tsx";
 import { useFonts } from "../contexts/FontContext";
@@ -242,7 +241,6 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                     <Segmented value={materialType} options={[{label: gLang('presuppose'), value: '预设'}, {label: gLang('customize'), value: '自定义'}]} block onChange={setMaterialType} />
                     {(materialType === '预设') ? (
                         <TextSettingsMaterialPresets
-                            presetMaterials={presetMaterials}
                             materials={textOptions.materials}
                             onMaterialsChange={(materials) => onTextOptionsChange({...textOptions, materials})}
                         />

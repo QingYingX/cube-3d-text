@@ -46,6 +46,7 @@ import {
     loadWorkspaceFromLocalStorage
 } from "./utils/workspaceIO";
 import { FontProvider, useFonts } from "./contexts/FontContext";
+import { MaterialProvider } from './contexts/MaterialContext';
 
 const { Panel } = Collapse;
 
@@ -624,7 +625,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
     return (
         <FontProvider>
-            <AppContent />
+            <MaterialProvider>
+                <AppContent />
+            </MaterialProvider>
         </FontProvider>
     );
 };

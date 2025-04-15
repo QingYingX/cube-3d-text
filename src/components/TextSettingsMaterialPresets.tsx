@@ -1,25 +1,38 @@
-// src/components/TextSettingsMaterialPanel.tsx
-import React, { CSSProperties } from "react";
-import { Card, Flex, Button, ConfigProvider } from "antd";
+import React, { CSSProperties, useEffect } from "react";
+import { Card, Flex, Button, ConfigProvider, Spin, Alert, Typography } from "antd";
 import {
     TextMaterials,
     TextMaterialGradientOption,
     TextMaterialImageOption,
     TextMaterialColorOption,
 } from "../types/text";
-import { CheckSquareTwoTone } from "@ant-design/icons";
+import { CheckSquareTwoTone, ReloadOutlined } from "@ant-design/icons";
+import { useMaterials } from "../contexts/MaterialContext";
 
-interface TextSettingsMaterialPanelProps {
-    presetMaterials: TextMaterials[];
+const { Text } = Typography;
+
+interface TextSettingsMaterialPresetsProps {
     materials: TextMaterials;
     onMaterialsChange: (materials: TextMaterials) => void;
 }
 
-const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
-                                                                                 presetMaterials,
-                                                                                 materials,
-                                                                                 onMaterialsChange,
-                                                                             }) => {
+const TextSettingsMaterialPresets: React.FC<TextSettingsMaterialPresetsProps> = ({
+    materials,
+    onMaterialsChange,
+}) => {
+    // 使用材质上下文替代本地状态
+    const { 
+        isLoading, 
+        error, 
+        collections, 
+        loadedMaterials, 
+        loadMaterials 
+    } = useMaterials();
+
+    // 组件挂载时加载材质
+    useEffect(() => {
+        loadMaterials();
+    }, [loadMaterials]);
 
     const renderPreview = (material: TextMaterials) : CSSProperties => {
         const style: CSSProperties = {};
@@ -34,7 +47,12 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
                 break;
             }
             case "image": {
-                style.backgroundImage = `url(${(material.front as TextMaterialImageOption).image})`;
+                // 检查是否为字符串或已加载的图像对象
+                const imageSource = typeof (material.front as TextMaterialImageOption).image === 'string'
+                    ? (material.front as TextMaterialImageOption).image
+                    : URL.createObjectURL((material.front as TextMaterialImageOption).image as unknown as Blob | File);
+                    
+                style.backgroundImage = `url(${imageSource})`;
                 style.backgroundSize = 'auto 100%';
                 style.imageRendering = 'pixelated';
                 break;
@@ -71,32 +89,71 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
         return colors;
     }
 
-    return (
-        <Card size={'small'}>
-            <Flex gap={'small'} vertical>
-                {presetMaterials.map((preset) => (
-                    <ConfigProvider
-                        key={presetMaterials.indexOf(preset)}
-                        theme={{
-                            token: {
-                                colorPrimary: iconColor(preset)[0],
-                            }
-                        }}
+    // 检查材质是否选中的函数
+    const isMaterialSelected = (material: TextMaterials) => {
+        return JSON.stringify(material) === JSON.stringify(materials);
+    };
+
+    // 渲染材质列表
+    const renderMaterialsList = () => {
+        // 使用JSON加载的材质
+        return collections.map((collection) => {
+            const material = loadedMaterials.get(collection);
+            if (!material) return null;
+            
+            return (
+                <ConfigProvider
+                    key={collection}
+                    theme={{
+                        token: {
+                            colorPrimary: iconColor(material)[0],
+                        }
+                    }}
+                >
+                    <Button
+                        block
+                        type={isMaterialSelected(material) ? 'primary' : undefined}
+                        ghost={isMaterialSelected(material)}
+                        onClick={() => onMaterialsChange(material)}
+                        style={renderPreview(material)}
                     >
-                        <Button
-                            block
-                            type={JSON.stringify(preset) === JSON.stringify(materials) ? 'primary' : undefined}
-                            ghost={JSON.stringify(preset) === JSON.stringify(materials)}
-                            onClick={() => onMaterialsChange(preset)}
-                            style={renderPreview(preset)}
-                        >
-                            {JSON.stringify(preset) === JSON.stringify(materials) && <CheckSquareTwoTone twoToneColor={iconColor(preset)}/>}
-                        </Button>
-                    </ConfigProvider>
-                ))}
-            </Flex>
+                        {isMaterialSelected(material) && <CheckSquareTwoTone twoToneColor={iconColor(material)}/>}
+                    </Button>
+                </ConfigProvider>
+            );
+        });
+    };
+
+    return (
+        <Card size={'small'} title="材质预设">
+            {isLoading ? (
+                <Flex justify="center" align="center" style={{ padding: '20px' }}>
+                    <Spin tip="加载材质中..." />
+                </Flex>
+            ) : error ? (
+                <Alert
+                    message="加载提示"
+                    description={
+                        <Flex vertical gap="small">
+                            <Text>{error}</Text>
+                            <Button 
+                                icon={<ReloadOutlined />} 
+                                onClick={loadMaterials}
+                            >
+                                重试加载
+                            </Button>
+                        </Flex>
+                    }
+                    type="warning"
+                    showIcon
+                />
+            ) : (
+                <Flex gap={'small'} vertical>
+                    {renderMaterialsList()}
+                </Flex>
+            )}
         </Card>
     );
 };
 
-export default TextSettingsMaterialPanel;
+export default TextSettingsMaterialPresets;

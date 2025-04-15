@@ -2,6 +2,8 @@
 
 [中文README](./README_CN.md)
 
+[如何贡献纹理？](./CONTRIBUTING.md)
+
 This is an online tool for creating **Minecraft**-style 3D text, built with **React** + **Three.js**.  
 It offers multiple features that help quickly generate various 3D text effects.
 
@@ -23,10 +25,10 @@ It offers multiple features that help quickly generate various 3D text effects.
 ## Development Plan
 
 - [x] Allow flexible addition and removal of text lines
-- [ ] Local creation and saving of material templates
+- [x] Local creation and saving of material templates
 - [x] Export to standard 3D model files
 - [ ] Export to Minecraft Bedrock Edition mesh format
-- [ ] Enable front outline (inner shadow) effects
+- [x] Enable front outline (inner shadow) effects
 
 ## Project Structure
 
