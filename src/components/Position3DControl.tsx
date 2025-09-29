@@ -160,23 +160,89 @@ const Position3DControl: React.FC<Position3DControlProps> = ({
     step = 0.1,
     disabled = false,
 }) => {
-    // 处理输入框值变化
-    const handleInputChange = (axis: 'x' | 'y' | 'z', value: string) => {
-        const numValue = parseFloat(value);
-        if (isNaN(numValue)) return;
+    // 本地输入字符串状态，允许临时不可解析的值（如 "-", "1.", ""）
+    const [inputX, setInputX] = useState<string>(x.toFixed(1));
+    const [inputY, setInputY] = useState<string>(y.toFixed(1));
+    const [inputZ, setInputZ] = useState<string>(z.toFixed(1));
 
-        const newPosition = { x, y, z };
-        newPosition[axis] = numValue;
-        onPositionChange(newPosition);
+    // 聚焦状态，避免在编辑时被外部值覆盖
+    const [editingX, setEditingX] = useState(false);
+    const [editingY, setEditingY] = useState(false);
+    const [editingZ, setEditingZ] = useState(false);
+
+    const formatNum = (n: number) => n.toFixed(1);
+
+    // 当外部值变化时，同步到本地显示（非编辑中）
+    useEffect(() => {
+        if (!editingX) setInputX(formatNum(x));
+    }, [x, editingX]);
+    useEffect(() => {
+        if (!editingY) setInputY(formatNum(y));
+    }, [y, editingY]);
+    useEffect(() => {
+        if (!editingZ) setInputZ(formatNum(z));
+    }, [z, editingZ]);
+
+    // 仅允许 数字/负号/点，负号只能在开头，点只能出现一次（但允许结尾处点作为临时态）
+    const allowedPartial = /^-?\d*(\.\d*)?$/;
+    // 完整数字，用于提交（不以点结尾，不是空或仅负号）
+    const completeNumber = /^-?\d+(?:\.\d+)?$/;
+
+    const handleInputChange = (axis: 'x' | 'y' | 'z', raw: string) => {
+        if (disabled) return;
+        if (!allowedPartial.test(raw)) {
+            // 拒绝包含非法字符的输入
+            return;
+        }
+
+        // 更新本地字符串
+        if (axis === 'x') setInputX(raw);
+        if (axis === 'y') setInputY(raw);
+        if (axis === 'z') setInputZ(raw);
+
+        // 若是完整数字，立刻提交变化
+        if (completeNumber.test(raw)) {
+            const numValue = parseFloat(raw);
+            const next = { x, y, z } as { x: number; y: number; z: number };
+            next[axis] = numValue;
+            onPositionChange(next);
+        }
+    };
+
+    const handleBlur = (axis: 'x' | 'y' | 'z') => {
+        const raw = axis === 'x' ? inputX : axis === 'y' ? inputY : inputZ;
+        let nextValue = axis === 'x' ? x : axis === 'y' ? y : z;
+
+        if (completeNumber.test(raw)) {
+            nextValue = parseFloat(raw);
+            const next = { x, y, z } as { x: number; y: number; z: number };
+            next[axis] = nextValue;
+            onPositionChange(next);
+        }
+
+        // 失焦后规范化显示为固定小数位
+        const formatted = formatNum(nextValue);
+        if (axis === 'x') {
+            setInputX(formatted);
+            setEditingX(false);
+        } else if (axis === 'y') {
+            setInputY(formatted);
+            setEditingY(false);
+        } else {
+            setInputZ(formatted);
+            setEditingZ(false);
+        }
     };
 
     return (
         <Flex gap="small" align="center">
             {/* X 轴控制 */}
             <Input
-                value={x.toFixed(1)}
+                value={inputX}
                 disabled={disabled}
                 onChange={(e) => handleInputChange('x', e.target.value)}
+                onFocus={() => setEditingX(true)}
+                onBlur={() => handleBlur('x')}
                 style={{ flex: 1 }}
                 prefix={
                     <DraggablePrefix
@@ -193,9 +259,11 @@ const Position3DControl: React.FC<Position3DControlProps> = ({
 
             {/* Y 轴控制 */}
             <Input
-                value={y.toFixed(1)}
+                value={inputY}
                 disabled={disabled}
                 onChange={(e) => handleInputChange('y', e.target.value)}
+                onFocus={() => setEditingY(true)}
+                onBlur={() => handleBlur('y')}
                 style={{ flex: 1 }}
                 prefix={
                     <DraggablePrefix
@@ -212,9 +280,11 @@ const Position3DControl: React.FC<Position3DControlProps> = ({
 
             {/* Z 轴控制 */}
             <Input
-                value={z.toFixed(1)}
+                value={inputZ}
                 disabled={disabled}
                 onChange={(e) => handleInputChange('z', e.target.value)}
+                onFocus={() => setEditingZ(true)}
+                onBlur={() => handleBlur('z')}
                 style={{ flex: 1 }}
                 prefix={
                     <DraggablePrefix
