@@ -252,7 +252,10 @@ const Position3DControl: React.FC<Position3DControlProps> = ({
                         range={xRange}
                         step={step}
                         disabled={disabled}
-                        onValueChange={(value) => onPositionChange({ x: value, y, z })}
+                        onValueChange={(value) => {
+                            setInputX(formatNum(value));
+                            onPositionChange({ x: value, y, z });
+                        }}
                     />
                 }
             />
@@ -273,7 +276,10 @@ const Position3DControl: React.FC<Position3DControlProps> = ({
                         range={yRange}
                         step={step}
                         disabled={disabled}
-                        onValueChange={(value) => onPositionChange({ x, y: value, z })}
+                        onValueChange={(value) => {
+                            setInputY(formatNum(value));
+                            onPositionChange({ x, y: value, z });
+                        }}
                     />
                 }
             />
@@ -294,7 +300,10 @@ const Position3DControl: React.FC<Position3DControlProps> = ({
                         range={zRange}
                         step={step}
                         disabled={disabled}
-                        onValueChange={(value) => onPositionChange({ x, y, z: value })}
+                        onValueChange={(value) => {
+                            setInputZ(formatNum(value));
+                            onPositionChange({ x, y, z: value });
+                        }}
                     />
                 }
             />
