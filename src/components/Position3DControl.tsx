@@ -1,0 +1,235 @@
+import React, { useState, useEffect } from 'react';
+import { Input, Flex, Typography } from 'antd';
+
+const { Text } = Typography;
+
+interface Position3DControlProps {
+    x: number;
+    y: number;
+    z: number;
+    onPositionChange: (position: { x: number; y: number; z: number }) => void;
+    xRange?: [number, number];
+    yRange?: [number, number];
+    zRange?: [number, number];
+    step?: number;
+    disabled?: boolean;
+}
+
+// 可拖拽的数值前缀组件
+const DraggablePrefix: React.FC<{
+    label: string;
+    color: string;
+    value: number;
+    range: [number, number];
+    step: number;
+    disabled: boolean;
+    onValueChange: (value: number) => void;
+}> = ({ label, color, value, range, step, disabled, onValueChange }) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStartValue, setDragStartValue] = useState(0);
+    const [dragStartY, setDragStartY] = useState(0);
+
+    const handleMouseDown = (event: React.MouseEvent) => {
+        if (disabled) return;
+
+        event.preventDefault();
+        setIsDragging(true);
+        setDragStartValue(value);
+        setDragStartY(event.clientY);
+        document.body.style.cursor = 'ns-resize';
+        document.body.style.userSelect = 'none';
+    };
+
+    const handleTouchStart = (event: React.TouchEvent) => {
+        if (disabled) return;
+
+        event.preventDefault();
+        event.stopPropagation(); // 防止触发页面滚动
+        setIsDragging(true);
+        setDragStartValue(value);
+        setDragStartY(event.touches[0].clientY);
+        document.body.style.userSelect = 'none';
+
+        // 防止页面滚动
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+
+        // 添加触觉反馈（如果支持）
+        if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+        }
+    };
+
+    useEffect(() => {
+        const handleMouseMove = (event: MouseEvent) => {
+            if (!isDragging) return;
+
+            const deltaY = dragStartY - event.clientY;
+            const sensitivity = 0.1;
+            const deltaValue = deltaY * sensitivity;
+            const newValue = dragStartValue + deltaValue;
+
+            const clampedValue = Math.max(range[0], Math.min(range[1], newValue));
+            const roundedValue = Math.round(clampedValue / step) * step;
+
+            onValueChange(roundedValue);
+        };
+
+        const handleTouchMove = (event: TouchEvent) => {
+            if (!isDragging) return;
+
+            event.preventDefault(); // 防止页面滚动
+            const deltaY = dragStartY - event.touches[0].clientY;
+            const sensitivity = 0.1;
+            const deltaValue = deltaY * sensitivity;
+            const newValue = dragStartValue + deltaValue;
+
+            const clampedValue = Math.max(range[0], Math.min(range[1], newValue));
+            const roundedValue = Math.round(clampedValue / step) * step;
+
+            onValueChange(roundedValue);
+        };
+
+        const handleEnd = () => {
+            setIsDragging(false);
+            document.body.style.cursor = 'auto';
+            document.body.style.userSelect = 'auto';
+
+            // 恢复页面滚动
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        };
+
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleEnd);
+        }
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleEnd);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleEnd);
+        };
+    }, [isDragging, dragStartValue, dragStartY, value, range, step, onValueChange]);
+
+    return (
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: disabled ? 'default' : 'ns-resize',
+                padding: '6px 4px',
+                marginLeft: '-4px',
+                minWidth: '20px',
+                justifyContent: 'center',
+                borderRadius: '2px',
+                backgroundColor: isDragging ? '#f0f0f0' : 'transparent',
+                userSelect: 'none'
+            }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            title={`拖拽调整 ${label} 轴位置`}
+        >
+            <Text
+                style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: disabled ? '#d9d9d9' : color,
+                    lineHeight: 1
+                }}
+            >
+                {label}
+            </Text>
+        </div>
+    );
+};
+
+const Position3DControl: React.FC<Position3DControlProps> = ({
+    x,
+    y,
+    z,
+    onPositionChange,
+    xRange = [-50, 50],
+    yRange = [-20, 20],
+    zRange = [-20, 20],
+    step = 0.1,
+    disabled = false,
+}) => {
+    // 处理输入框值变化
+    const handleInputChange = (axis: 'x' | 'y' | 'z', value: string) => {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) return;
+
+        const newPosition = { x, y, z };
+        newPosition[axis] = numValue;
+        onPositionChange(newPosition);
+    };
+
+    return (
+        <Flex gap="small" align="center">
+            {/* X 轴控制 */}
+            <Input
+                value={x.toFixed(1)}
+                disabled={disabled}
+                onChange={(e) => handleInputChange('x', e.target.value)}
+                style={{ flex: 1 }}
+                prefix={
+                    <DraggablePrefix
+                        label="X"
+                        color="#ff4d4f"
+                        value={x}
+                        range={xRange}
+                        step={step}
+                        disabled={disabled}
+                        onValueChange={(value) => onPositionChange({ x: value, y, z })}
+                    />
+                }
+            />
+
+            {/* Y 轴控制 */}
+            <Input
+                value={y.toFixed(1)}
+                disabled={disabled}
+                onChange={(e) => handleInputChange('y', e.target.value)}
+                style={{ flex: 1 }}
+                prefix={
+                    <DraggablePrefix
+                        label="Y"
+                        color="#52c41a"
+                        value={y}
+                        range={yRange}
+                        step={step}
+                        disabled={disabled}
+                        onValueChange={(value) => onPositionChange({ x, y: value, z })}
+                    />
+                }
+            />
+
+            {/* Z 轴控制 */}
+            <Input
+                value={z.toFixed(1)}
+                disabled={disabled}
+                onChange={(e) => handleInputChange('z', e.target.value)}
+                style={{ flex: 1 }}
+                prefix={
+                    <DraggablePrefix
+                        label="Z"
+                        color="#1890ff"
+                        value={z}
+                        range={zRange}
+                        step={step}
+                        disabled={disabled}
+                        onValueChange={(value) => onPositionChange({ x, y, z: value })}
+                    />
+                }
+            />
+        </Flex>
+    );
+};
+
+export default Position3DControl;

@@ -9,6 +9,7 @@ import TextSettingsOverlayPanel from "./TextSettingsOverlayPanel.tsx";
 import { useFonts } from "../contexts/FontContext";
 import { builtinFontsLicence, builtinFontsMap } from "../utils/fonts.ts";
 import FontSelector from "./FontSelector.tsx";
+import Position3DControl from "./Position3DControl.tsx";
 
 interface TextSettingsPanelProps {
     text: string;
@@ -68,68 +69,24 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                 />
             </Form.Item>
 
-            <Form.Item label={gLang('leftRightPosition')}>
-                <Flex gap={'small'}>
-                    <Slider
-                        style={{ flex: 1 }}
-                        min={-50}
-                        max={50}
-                        step={0.1}
-                        value={textOptions.x}
-                        onChange={(val) => onTextOptionsChange({ ...textOptions, x: val })}
-                    />
-                    <InputNumber
-                        style={{ width: 64 }}
-                        variant="filled"
-                        min={-50}
-                        max={50}
-                        step={0.1}
-                        value={textOptions.x}
-                        onChange={(val) => onTextOptionsChange({ ...textOptions, x: val ?? 0 })}
-                    />
-                </Flex>
-            </Form.Item>
-            <Form.Item label={`${gLang('upDownPosition')}`}>
-                <Flex gap={'small'}>
-                    <Slider
-                        style={{ flex: 1 }}
-                        min={-20}
-                        max={20}
-                        step={0.1}
-                        value={textOptions.y}
-                        onChange={(val) => onTextOptionsChange({ ...textOptions, y: val })}
-                    />
-                    <InputNumber
-                        style={{ width: 64 }}
-                        variant="filled"
-                        min={-20}
-                        max={20}
-                        step={0.1}
-                        value={textOptions.y}
-                        onChange={(val) => onTextOptionsChange({ ...textOptions, y: val ?? 0 })}
-                    />
-                </Flex>
-            </Form.Item>
-            <Form.Item label={gLang('frontBackPosition')}>
-                <Flex gap={'small'}>
-                    <Slider
-                        style={{ flex: 1 }}
-                        min={-20}
-                        max={20}
-                        step={0.1}
-                        value={textOptions.z}
-                        onChange={(val) => onTextOptionsChange({ ...textOptions, z: val })}
-                    />
-                    <InputNumber
-                        style={{ width: 64 }}
-                        variant="filled"
-                        min={-20}
-                        max={20}
-                        step={0.1}
-                        value={textOptions.z}
-                        onChange={(val) => onTextOptionsChange({ ...textOptions, z: val ?? 0 })}
-                    />
-                </Flex>
+            <Form.Item label={gLang('position3D')}>
+                <Position3DControl
+                    x={textOptions.x}
+                    y={textOptions.y}
+                    z={textOptions.z}
+                    onPositionChange={(position) =>
+                        onTextOptionsChange({
+                            ...textOptions,
+                            x: position.x,
+                            y: position.y,
+                            z: position.z
+                        })
+                    }
+                    xRange={[-50, 50]}
+                    yRange={[-20, 20]}
+                    zRange={[-20, 20]}
+                    step={0.1}
+                />
             </Form.Item>
             <Form.Item label={gLang('upDownRotate')}>
                 <Flex gap={'small'}>
