@@ -67,7 +67,28 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
                     globalFontId={globalFontId}
                 />
             </Form.Item>
-            
+
+            <Form.Item label={gLang('leftRightPosition')}>
+                <Flex gap={'small'}>
+                    <Slider
+                        style={{ flex: 1 }}
+                        min={-50}
+                        max={50}
+                        step={0.1}
+                        value={textOptions.x}
+                        onChange={(val) => onTextOptionsChange({ ...textOptions, x: val })}
+                    />
+                    <InputNumber
+                        style={{ width: 64 }}
+                        variant="filled"
+                        min={-50}
+                        max={50}
+                        step={0.1}
+                        value={textOptions.x}
+                        onChange={(val) => onTextOptionsChange({ ...textOptions, x: val ?? 0 })}
+                    />
+                </Flex>
+            </Form.Item>
             <Form.Item label={`${gLang('upDownPosition')}`}>
                 <Flex gap={'small'}>
                     <Slider

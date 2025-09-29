@@ -16,6 +16,7 @@ export interface WorkspaceData {
 export interface TextOptions {
     size: number;
     depth: number;
+    x: number;
     y: number;
     z: number;
     rotY: number

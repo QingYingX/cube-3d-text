@@ -73,6 +73,7 @@ const AppContent: React.FC = () => {
             opts: {
                 size: 10,
                 depth: 5,
+                x: 0,
                 y: 8,
                 z: 0,
                 rotY: 0,
@@ -89,6 +90,7 @@ const AppContent: React.FC = () => {
             opts: {
                 size: 5,
                 depth: 3,
+                x: 0,
                 y: -4,
                 z: 0,
                 rotY: 0,
@@ -169,6 +171,7 @@ const AppContent: React.FC = () => {
                 opts: {
                     size: 5,
                     depth: 3,
+                    x: 0,
                     y: texts.length * -6,
                     z: 0,
                     rotY: 0,
@@ -383,6 +386,7 @@ const AppContent: React.FC = () => {
                                                 opts: {
                                                     size: 5,
                                                     depth: 3,
+                                                    x: 0,
                                                     y: texts.length * -6,
                                                     z: 0,
                                                     rotY: 0,

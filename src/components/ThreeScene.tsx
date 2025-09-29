@@ -145,7 +145,7 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(({ texts, globa
                                 opts={text.opts}
                                 globalTextureYOffset={globalTextureYOffset}
                                 font={font}
-                                position={[0, text.opts.y, text.opts.z]}
+                                position={[text.opts.x, text.opts.y, text.opts.z]}
                                 rotation={[text.opts.rotY * (Math.PI / 180), 0, 0]}
                             />
                         );
