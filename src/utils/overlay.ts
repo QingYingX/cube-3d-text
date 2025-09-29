@@ -100,6 +100,36 @@ export const overlayRendererGlass: OverlayRenderer = (ctx, shapes) => {
     innerStroke({ ctx, shapes, strokeWidth: 0.02, strokeColor: "rgba(255, 255, 255, 0.4)" });
 }
 
+export const overlayRendererInnerHighlight: OverlayRenderer = (ctx, shapes) => {
+    const OFFSET_GAP = 0.020;      // 第一层偏移（空隙层）
+    const OFFSET_HIGHLIGHT = 0.045; // 第二层偏移（高光层）
+    const HIGHLIGHT_COLOR = "rgba(255, 255, 255, 0.65)";
+
+    // 获取第一层偏移形状（空隙边界）
+    const gapPath = new Path2D();
+    shapes.map((shape: THREE.Shape) => offsetShape(shape, -OFFSET_GAP)).forEach((offsetShapes: THREE.Shape[]) => {
+        offsetShapes.forEach((offsetShape: THREE.Shape) => {
+            shapeToCanvasPath(offsetShape, gapPath);
+        });
+    });
+
+    // 获取第二层偏移形状（高光区域）
+    const highlightPath = new Path2D();
+    shapes.map((shape: THREE.Shape) => offsetShape(shape, -OFFSET_HIGHLIGHT)).forEach((offsetShapes: THREE.Shape[]) => {
+        offsetShapes.forEach((offsetShape: THREE.Shape) => {
+            shapeToCanvasPath(offsetShape, highlightPath);
+        });
+    });
+
+    // 布尔运算：第一层偏移区域 - 第二层偏移区域 = 内高光环形区域
+    const combinedPath = new Path2D();
+    combinedPath.addPath(gapPath);      // 添加第一层偏移形状
+    combinedPath.addPath(highlightPath); // 减去第二层偏移形状
+
+    ctx.fillStyle = HIGHLIGHT_COLOR;
+    ctx.fill(combinedPath, 'evenodd');
+};
+
 export const overlayRendererShine: OverlayRenderer = (ctx, _, width, height) => {
     const GRADIENT_COLOR_START = "rgba(255, 255, 255, 0.6)";
     const GRADIENT_COLOR_END = "rgba(255, 255, 255, 0.1)";
@@ -163,6 +193,11 @@ export const builtinOverlayRenderers: OverlayRendererInfo[] = [
         name: "overlay.highlightInnerStroke",
         renderer: overlayRendererInnerStroke,
         preview: "/overlay-preview/inner-stroke.png",
+    },
+    {
+        name: "overlay.highlightInnerHighlight",
+        renderer: overlayRendererInnerHighlight,
+        preview: "/overlay-preview/inner-highlight.png",
     },
     {
         name: "overlay.highlightShine",

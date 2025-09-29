@@ -108,6 +108,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
             highlightTop: "顶部高亮",
             highlightTopBottom: "上下高亮",
             highlightInnerStroke: "内描边",
+            highlightInnerHighlight: "内高光",
             highlightShine: "光泽",
             highlightGlass: "玻璃(温和)"
         },
@@ -208,6 +209,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
             highlightTop: "Highlight Top",
             highlightTopBottom: "Highlight Both",
             highlightInnerStroke: "Inner Stroke",
+            highlightInnerHighlight: "Inner Highlight",
             highlightShine: "Shine",
             highlightGlass: "Glass (Tempered)"
         },
@@ -308,6 +310,7 @@ export const languageConfig: Readonly<LanguageConfig> = {
             highlightTop: "上部ハイライト",
             highlightTopBottom: "上部下部ハイライト",
             highlightInnerStroke: "内部ストローク",
+            highlightInnerHighlight: "内側ハイライト",
             highlightShine: "輝き",
             highlightGlass: "ガラス（強化）"
         },
