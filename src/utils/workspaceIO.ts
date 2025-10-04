@@ -1,5 +1,6 @@
 import { WorkspaceData } from "../types/text";
 import { MessageInstance } from "antd/es/message/interface";
+import { builtinOverlayRenderers } from "./overlay";
 
 /**
  * 当前工作区数据版本
@@ -49,26 +50,75 @@ export function exportWorkspace(workspace: WorkspaceData): void {
     version: CURRENT_WORKSPACE_VERSION,
     data: workspace
   };
-  
-  // 将工作区数据转换为 JSON 字符串
-  const jsonString = JSON.stringify(versionedData, null, 2);
-  
+
+  // 将工作区数据转换为 JSON 字符串，使用自定义 replacer 处理 overlay
+  const jsonString = JSON.stringify(versionedData, workspaceReplacer, 2);
+
   // 创建 Blob 对象
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  
+
   // 创建一个临时的<a>元素用于下载
   const a = document.createElement('a');
   a.href = url;
   a.download = `${generateValidFileName(workspace)}.json`;
-  
+
   // 模拟点击下载
   document.body.appendChild(a);
   a.click();
-  
+
   // 清理
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * JSON 序列化时的 replacer 函数
+ * 将 overlay 对象转换为字符串（仅保存 name）
+ */
+export function workspaceReplacer(key: string, value: unknown): unknown {
+  // 将 overlay 对象序列化为字符串（只保存 name）
+  if (key === 'overlay' && value && typeof value === 'object' && 'name' in value) {
+    return (value as { name: string }).name;
+  }
+  return value;
+}
+
+/**
+ * 恢复 overlay 字段为完整的 OverlayRendererInfo 对象
+ * 支持三种情况：
+ * 1. overlay 为字符串 - 根据 name 从预设列表查找
+ * 2. overlay 为对象但缺少 renderer - 根据 name 从预设列表查找
+ * 3. overlay 为 undefined - 保持不变
+ */
+function restoreOverlayField(opts: { overlay?: unknown }): void {
+  if (!opts.overlay) {
+    return; // undefined 或 null，不需要处理
+  }
+
+  let overlayName: string | undefined;
+
+  // 情况1：overlay 是字符串
+  if (typeof opts.overlay === 'string') {
+    overlayName = opts.overlay;
+  }
+  // 情况2：overlay 是对象（旧格式导出的残缺对象）
+  else if (typeof opts.overlay === 'object' && 'name' in opts.overlay) {
+    overlayName = (opts.overlay as { name?: string }).name;
+  }
+
+  // 根据 name 从预设列表查找完整对象
+  if (overlayName) {
+    const foundOverlay = builtinOverlayRenderers.find(o => o.name === overlayName);
+    if (foundOverlay) {
+      opts.overlay = foundOverlay;
+    } else {
+      console.warn(`未找到预设 overlay: ${overlayName}`);
+      opts.overlay = undefined; // 找不到则清除
+    }
+  } else {
+    opts.overlay = undefined; // 无效格式则清除
+  }
 }
 
 /**
@@ -90,10 +140,12 @@ const versionUpgraders: Record<number, VersionUpgrader> = {
       if (!text.opts.z) {
         text.opts.z = 0;
       }
+      // 恢复 overlay 完整对象
+      restoreOverlayField(text.opts);
     });
     return workspaceData;
   }
-  
+
   // 当添加新版本时，在这里添加更多的升级函数
   // 1: (v1Data) => { /* v1 到 v2 的转换 */ }
 };
@@ -120,8 +172,12 @@ export function upgradeToLatest(jsonData: string, messageApi?: MessageInstance |
       workspaceData = data as WorkspaceData;
     }
     
-    // 如果版本已经是最新，直接返回
+    // 如果版本已经是最新，仍需要恢复 overlay 字段（因为导出时被序列化为字符串）
     if (currentVersion >= CURRENT_WORKSPACE_VERSION) {
+      // 恢复所有文本的 overlay 字段
+      workspaceData.texts.forEach((text) => {
+        restoreOverlayField(text.opts);
+      });
       return workspaceData;
     }
     
@@ -186,7 +242,9 @@ export function saveWorkspaceToLocalStorage(workspace: WorkspaceData, messageApi
       version: CURRENT_WORKSPACE_VERSION,
       data: workspace
     };
-    localStorage.setItem('workspace', JSON.stringify(versionedData));
+    // 使用与 exportWorkspace 相同的 replacer 处理 overlay
+    const jsonString = JSON.stringify(versionedData, workspaceReplacer);
+    localStorage.setItem('workspace', jsonString);
   } catch (e) {
     const errorMsg = '保存工作区到本地存储失败';
     console.error(errorMsg, e);
