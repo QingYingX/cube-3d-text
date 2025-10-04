@@ -7,6 +7,7 @@ import { CameraOptions, Text3DData } from "../types/text";
 import ThreeScene, { ThreeSceneHandle } from "./ThreeScene.tsx";
 import { GLTFExporter, OBJExporter, STLExporter, OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useMessage } from "../contexts/MessageContext.tsx";
+import { useLanguage } from "../language.tsx";
 
 // 相机配置常量
 const CAMERA_CONSTANTS = {
@@ -184,6 +185,7 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
     const orbitRef = useRef<OrbitControlsImpl>(null);
     const threeSceneRef = useRef<ThreeSceneHandle>(null);
     const messageApi = useMessage();
+    const { gLang } = useLanguage();
 
     // 计算场景 boundingBox 的辅助函数
     const computeScreenBoundingBox = (

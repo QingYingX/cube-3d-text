@@ -162,7 +162,6 @@ const Position3DControl: React.FC<Position3DControlProps> = ({
     step = 0.1,
     disabled = false,
 }) => {
-    const { gLang } = useLanguage();
     // 本地输入字符串状态，允许临时不可解析的值（如 "-", "1.", ""）
     const [inputX, setInputX] = useState<string>(x.toFixed(1));
     const [inputY, setInputY] = useState<string>(y.toFixed(1));
