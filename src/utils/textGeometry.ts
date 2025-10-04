@@ -6,6 +6,83 @@ import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import * as ClipperLib from 'clipper-lib';
 import { OFFSET_SCALE, offsetShape } from "./offsetShape";
 
+// 占位符配置常量
+const PLACEHOLDER_WIDTH_RATIO = 0.6;
+const PLACEHOLDER_HEIGHT_RATIO = 0.8;
+
+/**
+ * 创建矩形形状的通用函数
+ * @param centerX 矩形中心 X 坐标
+ * @param bottom 矩形底部 Y 坐标
+ * @param width 矩形宽度
+ * @param height 矩形高度
+ * @returns THREE.Shape 对象
+ */
+const createRectShape = (centerX: number, bottom: number, width: number, height: number): THREE.Shape => {
+    const rectShape = new THREE.Shape();
+    const left = centerX - width / 2;
+    const right = centerX + width / 2;
+    const top = bottom + height;
+
+    rectShape.moveTo(left, bottom);
+    rectShape.lineTo(right, bottom);
+    rectShape.lineTo(right, top);
+    rectShape.lineTo(left, top);
+    rectShape.lineTo(left, bottom);
+
+    return rectShape;
+};
+
+/**
+ * 创建占位符 2D 形状（用于 overlay 等 2D 渲染）
+ * @param offsetX 形状左侧 X 坐标
+ * @param size 字符大小
+ * @returns THREE.Shape 对象
+ */
+const createPlaceholder2DShape = (offsetX: number, size: number): THREE.Shape => {
+    const width = size * PLACEHOLDER_WIDTH_RATIO;
+    const height = size * PLACEHOLDER_HEIGHT_RATIO;
+    return createRectShape(offsetX + width / 2, 0, width, height);
+};
+
+/**
+ * 创建占位符几何体（使用挤压几何体，与文字几何体结构一致）
+ * @param size 字符大小
+ * @param height 字符深度
+ * @returns 占位符几何体
+ */
+const createPlaceholderGeometry = (size: number, height: number): THREE.BufferGeometry => {
+    const width = size * PLACEHOLDER_WIDTH_RATIO;
+    const rectHeight = size * PLACEHOLDER_HEIGHT_RATIO;
+
+    // 使用通用函数创建矩形，底部对齐基线
+    const rectShape = createRectShape(0, 0, width, rectHeight);
+
+    // 使用 ExtrudeGeometry 挤压，与 TextGeometry 结构一致
+    const extrudeSettings: THREE.ExtrudeGeometryOptions = {
+        depth: height,
+        bevelEnabled: false
+    };
+
+    return new THREE.ExtrudeGeometry(rectShape, extrudeSettings);
+};
+
+/**
+ * 创建占位符描边形状（比占位符稍大的矩形）
+ * @param size 字符大小
+ * @param outlineWidth 描边宽度
+ * @returns 描边形状数组
+ */
+const createPlaceholderOutlineShape = (size: number, outlineWidth: number): THREE.Shape[] => {
+    const width = size * PLACEHOLDER_WIDTH_RATIO + outlineWidth * 2;
+    const rectHeight = size * PLACEHOLDER_HEIGHT_RATIO + outlineWidth * 2;
+
+    // 使用通用函数创建外扩的矩形（描边）
+    const outlineShape = createRectShape(0, -outlineWidth, width, rectHeight);
+
+    return [outlineShape];
+};
+
 /**
  * 计算单个形状的有向面积（不包括内洞）
  * @param shape THREE.Shape 或 THREE.Path 对象
@@ -154,8 +231,8 @@ export function createSpacedTextGeometry({
 }: CreateSpacedTextGeometryOptions): THREE.BufferGeometry {
     const geometries: THREE.BufferGeometry[] = [];
     let offsetX = 0;
-
     const spacing = size * 0.12;
+    const unsupportedChars = new Set<string>();
 
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
@@ -167,19 +244,30 @@ export function createSpacedTextGeometry({
         }
 
         // 创建单个字符的几何体
-        const charGeometry = new TextGeometry(char, {
-            font,
-            size,
-            depth: height,
-            curveSegments,
-            bevelEnabled
-        });
+        let charGeometry: THREE.BufferGeometry;
+        let charWidth: number;
 
-        // 计算单个字符的 boundingBox，以便得知它的宽度
-        charGeometry.computeBoundingBox();
-        const charWidth = charGeometry.boundingBox
-            ? (charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x)
-            : size;
+        try {
+            charGeometry = new TextGeometry(char, {
+                font,
+                size,
+                depth: height,
+                curveSegments,
+                bevelEnabled
+            });
+
+            // 计算单个字符的 boundingBox，以便得知它的宽度
+            charGeometry.computeBoundingBox();
+            charWidth = charGeometry.boundingBox
+                ? (charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x)
+                : size;
+        } catch (error) {
+            // 如果字体不支持该字符，使用占位符
+            console.warn(`字体不支持字符 "${char}"，使用占位符替代`);
+            unsupportedChars.add(char);
+            charGeometry = createPlaceholderGeometry(size, height);
+            charWidth = size * PLACEHOLDER_WIDTH_RATIO;
+        }
 
         // 将该字符几何体平移
         charGeometry.translate(offsetX, 0, 0);
@@ -187,6 +275,19 @@ export function createSpacedTextGeometry({
 
         // 更新 offset，以便放下一个字
         offsetX += charWidth + letterSpacing * spacing;
+    }
+
+    // 如果有不支持的字符，输出汇总警告
+    if (unsupportedChars.size > 0) {
+        console.warn(
+            `当前字体不支持以下字符，已使用方块占位符显示: ${Array.from(unsupportedChars).join(', ')}\n` +
+            `建议更换支持这些字符的字体。`
+        );
+    }
+
+    // 如果没有任何几何体，返回空几何体
+    if (geometries.length === 0) {
+        return new THREE.BufferGeometry();
     }
 
     // 合并所有字符
@@ -267,7 +368,6 @@ export const createSpacedTextGeometryOutline = ({
                                                 }: CreateSpacedTextOutlineGeometryOptions): THREE.BufferGeometry => {
     const allShapes: THREE.Shape[] = [];
     let offsetX = 0;
-
     const spacing = size * 0.12;
 
     for (let i = 0; i < text.length; i++) {
@@ -281,25 +381,48 @@ export const createSpacedTextGeometryOutline = ({
             continue;
         }
 
-        const charShapes = font.generateShapes(char, size);
+        let charShapes: THREE.Shape[];
+        let isPlaceholder = false;
+
+        try {
+            charShapes = font.generateShapes(char, size);
+
+            if (charShapes.length === 0) {
+                // 使用占位符描边
+                charShapes = createPlaceholderOutlineShape(size, outlineWidth);
+                isPlaceholder = true;
+            }
+        } catch (error) {
+            // 字体不支持该字符，使用占位符描边
+            console.warn(`字体不支持字符 "${char}"，使用占位符描边`);
+            charShapes = createPlaceholderOutlineShape(size, outlineWidth);
+            isPlaceholder = true;
+        }
 
         // 确保顶点顺序正确
         const adjustedShapes: THREE.Shape[] = charShapes.map(shape => ensureWindingOrder(shape, curveSegments));
 
-        // 对每个形状进行膨胀
-        const expandedShapes: THREE.Shape[] = [];
-        adjustedShapes.forEach(shape => {
-            const offsetted = offsetShape(shape, outlineWidth);
-            expandedShapes.push(...offsetted);
-        });
+        let outerShapes: THREE.Shape[];
 
-        // 仅保留外轮廓（有向面积为正的形状）
-        const outerShapes = expandedShapes.filter(shape => computeShapeArea(shape, curveSegments) > 0);
+        if (isPlaceholder) {
+            // 占位符描边已经是外扩的形状，直接使用
+            outerShapes = adjustedShapes;
+        } else {
+            // 对每个形状进行膨胀
+            const expandedShapes: THREE.Shape[] = [];
+            adjustedShapes.forEach(shape => {
+                const offsetted = offsetShape(shape, outlineWidth);
+                expandedShapes.push(...offsetted);
+            });
 
-        if (outerShapes.length === 0) {
-            console.log('No outer shapes for char:', char);
-            // 如果没有外轮廓，则直接插入所有形状
-            outerShapes.push(...expandedShapes);
+            // 仅保留外轮廓（有向面积为正的形状）
+            outerShapes = expandedShapes.filter(shape => computeShapeArea(shape, curveSegments) > 0);
+
+            if (outerShapes.length === 0) {
+                console.log('No outer shapes for char:', char);
+                // 如果没有外轮廓，则直接插入所有形状
+                outerShapes.push(...expandedShapes);
+            }
         }
 
         // 将膨胀后的形状转换为 ClipperLib.Path
@@ -322,9 +445,15 @@ export const createSpacedTextGeometryOutline = ({
         });
 
         // 计算字符宽度以更新 offsetX
-        const charGeometry = new THREE.ShapeGeometry(adjustedShapes);
-        charGeometry.computeBoundingBox();
-        const charWidth = charGeometry.boundingBox ? charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x : size;
+        let charWidth: number;
+        if (isPlaceholder) {
+            // 占位符使用固定宽度
+            charWidth = size * PLACEHOLDER_WIDTH_RATIO;
+        } else {
+            const charGeometry = new THREE.ShapeGeometry(adjustedShapes);
+            charGeometry.computeBoundingBox();
+            charWidth = charGeometry.boundingBox ? charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x : size;
+        }
 
         // 更新下一个字符的偏移量
         offsetX += charWidth + letterSpacing * spacing;
@@ -332,6 +461,11 @@ export const createSpacedTextGeometryOutline = ({
 
     // 再次修复在面内部的孔，从而避免无效的描边
     const fixedAllShapes = allShapes.filter(shape => computeShapeArea(shape, curveSegments) > 0);
+
+    // 如果没有任何形状，返回空几何体
+    if (fixedAllShapes.length === 0) {
+        return new THREE.BufferGeometry();
+    }
 
     // 使用合并后的所有形状创建几何体
     const extrudeSettings: THREE.ExtrudeGeometryOptions = {
@@ -366,7 +500,6 @@ export function createTextShapes2D(params: {
     } = params;
 
     const size = 1;
-
     const shapes: THREE.Shape[] = [];
     let offsetX = 0;
     const spacing = size * 0.12;
@@ -379,7 +512,28 @@ export function createTextShapes2D(params: {
             continue;
         }
 
-        const charShapes = font.generateShapes(char, size);
+        let charShapes: THREE.Shape[];
+        let charWidth: number;
+
+        try {
+            charShapes = font.generateShapes(char, size);
+
+            if (charShapes.length === 0) {
+                // 使用占位符矩形
+                shapes.push(createPlaceholder2DShape(offsetX, size));
+                charWidth = size * PLACEHOLDER_WIDTH_RATIO;
+                offsetX += charWidth + letterSpacing * spacing;
+                continue;
+            }
+        } catch (error) {
+            // 字体不支持该字符，使用占位符矩形
+            console.warn(`字体不支持字符 "${char}"，使用占位符形状`);
+            shapes.push(createPlaceholder2DShape(offsetX, size));
+            charWidth = size * PLACEHOLDER_WIDTH_RATIO;
+            offsetX += charWidth + letterSpacing * spacing;
+            continue;
+        }
+
         charShapes.forEach((shape) => {
             const translatedPoints = shape.getPoints().map(p =>
                 new THREE.Vector2(p.x + offsetX, p.y)
@@ -399,21 +553,26 @@ export function createTextShapes2D(params: {
 
         const charGeometry = new THREE.ShapeGeometry(charShapes);
         charGeometry.computeBoundingBox();
-        const charWidth = charGeometry.boundingBox
+        charWidth = charGeometry.boundingBox
             ? charGeometry.boundingBox.max.x - charGeometry.boundingBox.min.x
             : size;
         offsetX += charWidth + letterSpacing * spacing;
     }
 
+    // 如果没有任何形状，返回默认值
+    if (shapes.length === 0) {
+        return { shapes: [], totalWidth: 0, totalHeight: size };
+    }
+
     // 2. 创建完整几何体计算精确尺寸
     const completeGeometry = new THREE.ShapeGeometry(shapes);
     completeGeometry.computeBoundingBox();
-    
-    const totalWidth = completeGeometry.boundingBox 
-        ? completeGeometry.boundingBox.max.x - completeGeometry.boundingBox.min.x 
+
+    const totalWidth = completeGeometry.boundingBox
+        ? completeGeometry.boundingBox.max.x - completeGeometry.boundingBox.min.x
         : 0;
-    const totalHeight = completeGeometry.boundingBox 
-        ? completeGeometry.boundingBox.max.y - completeGeometry.boundingBox.min.y 
+    const totalHeight = completeGeometry.boundingBox
+        ? completeGeometry.boundingBox.max.y - completeGeometry.boundingBox.min.y
         : size;
 
     // 得到最左上角的点，然后将其他所有点都偏移
