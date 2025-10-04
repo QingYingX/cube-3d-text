@@ -64,7 +64,7 @@ export const MaterialProvider: React.FC<{ children: ReactNode }> = ({ children }
       setState(prev => ({
         ...prev,
         isLoading: false,
-        error: "无法加载材质文件"
+        error: "cannotLoadMaterialFile"
       }));
     }
   }, [state.collections.length, state.loadedMaterials.size, state.error]);

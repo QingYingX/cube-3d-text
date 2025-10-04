@@ -8,6 +8,7 @@ import {
 } from "../types/text";
 import { CheckSquareTwoTone, ReloadOutlined } from "@ant-design/icons";
 import { useMaterials } from "../contexts/MaterialContext";
+import { useLanguage } from "../language";
 
 const { Text } = Typography;
 
@@ -20,13 +21,15 @@ const TextSettingsMaterialPresets: React.FC<TextSettingsMaterialPresetsProps> = 
     materials,
     onMaterialsChange,
 }) => {
+    const { gLang } = useLanguage();
+
     // 使用材质上下文替代本地状态
-    const { 
-        isLoading, 
-        error, 
-        collections, 
-        loadedMaterials, 
-        loadMaterials 
+    const {
+        isLoading,
+        error,
+        collections,
+        loadedMaterials,
+        loadMaterials
     } = useMaterials();
 
     // 组件挂载时加载材质，但仅在首次渲染时执行
@@ -126,24 +129,24 @@ const TextSettingsMaterialPresets: React.FC<TextSettingsMaterialPresetsProps> = 
     };
 
     return (
-        <Card size={'small'} title="材质预设">
+        <Card size={'small'} title={gLang('materialPresets')}>
             {isLoading ? (
                 <Flex justify="center" align="center" style={{ padding: '20px' }}>
-                    <Spin tip="加载材质中...">
+                    <Spin tip={gLang('loadingMaterials')}>
                         <div style={{ minHeight: '60px' }} />
                     </Spin>
                 </Flex>
             ) : error ? (
                 <Alert
-                    message="加载提示"
+                    message={gLang('loadingNotice')}
                     description={
                         <Flex vertical gap="small">
-                            <Text>{error}</Text>
-                            <Button 
-                                icon={<ReloadOutlined />} 
+                            <Text>{gLang(error || 'cannotLoadMaterialFile')}</Text>
+                            <Button
+                                icon={<ReloadOutlined />}
                                 onClick={loadMaterials}
                             >
-                                重试加载
+                                {gLang('retryLoad')}
                             </Button>
                         </Flex>
                     }

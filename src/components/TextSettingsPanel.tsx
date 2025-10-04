@@ -32,7 +32,7 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
 }) => {
     const { gLang } = useLanguage();
     const { fontsMap, deleteFont } = useFonts();
-    const [materialType, setMaterialType] = useState<'预设' | '自定义'>('预设');
+    const [materialType, setMaterialType] = useState<'preset' | 'custom'>('preset');
     
     // 当前显示的字体值：使用文本自己的字体或显示为"全局"
     const displayFontValue = fontId || 'global';
@@ -216,8 +216,8 @@ const TextSettingsPanel: React.FC<TextSettingsPanelProps> = ({
             </Form.Item>
             <Form.Item label={gLang('texture')} layout={'vertical'}>
                 <Flex gap={'small'} vertical>
-                    <Segmented value={materialType} options={[{label: gLang('presuppose'), value: '预设'}, {label: gLang('customize'), value: '自定义'}]} block onChange={setMaterialType} />
-                    {(materialType === '预设') ? (
+                    <Segmented value={materialType} options={[{label: gLang('preset'), value: 'preset'}, {label: gLang('custom'), value: 'custom'}]} block onChange={setMaterialType} />
+                    {(materialType === 'preset') ? (
                         <TextSettingsMaterialPresets
                             materials={textOptions.materials}
                             onMaterialsChange={(materials) => onTextOptionsChange({...textOptions, materials})}

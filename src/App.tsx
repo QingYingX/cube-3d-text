@@ -128,7 +128,7 @@ const AppContent: React.FC = () => {
                     texts: texts
                 };
                 exportWorkspace(workspace);
-                messageApi?.success('项目已导出为JSON文件');
+                messageApi?.success(gLang('projectExportSuccess'));
             } else if (e.key === 'glb' || e.key === 'gltf' || e.key === 'obj' || e.key === 'stl') {
                 threeCanvasRef.current.exportScene(e.key);
             }
@@ -265,20 +265,20 @@ const AppContent: React.FC = () => {
         >
             <MessageProvider>
                 <Modal
-                    title="提示"
+                    title={gLang('notice')}
                     open={chinaMirrorAlertModal}
-                    okText="🚀 立即前往"
+                    okText={gLang('gotoNow')}
                     width={400}
                     onOk={() => {
                         window.location.href = 'https://3dt.easecation.net';
                     }}
-                    cancelText="7 天内不再显示"
+                    cancelText={gLang('hideFor7Days')}
                     onCancel={() => {
                         setChinaMirrorAlertModal(false);
                         localStorage.setItem('hideChinaMirrorAlertUntil', String(Date.now() + 7 * 24 * 60 * 60 * 1000));
                     }}
                 >
-                    🚀 国内用户推荐访问国内镜像以获得极速体验～
+                    {gLang('chinaMirrorNotice')}
                 </Modal>
                 {isMobile && (
                     <Popover
@@ -491,7 +491,7 @@ const AppContent: React.FC = () => {
                                     input.onchange = (e) => {
                                         const file = (e.target as HTMLInputElement).files?.[0];
                                         if (file) {
-                                            importWorkspaceFromFile(file, messageApi)
+                                            importWorkspaceFromFile(file, messageApi, gLang)
                                                 .then(workspace => {
                                                     setGlobalFontId(workspace.fontId);
                                                     setTexts(workspace.texts);

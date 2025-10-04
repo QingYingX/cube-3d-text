@@ -300,7 +300,7 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             }
         } catch (err) {
             console.error(`导出 ${format} 失败:`, err);
-            messageApi?.error("导出失败，请检查控制台信息。");
+            messageApi?.error(gLang('exportFailed'));
         }
     }
 
@@ -319,7 +319,7 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             downloadTextData(objString, "scene.obj", "text/plain");
         } catch (err) {
             console.error("导出 OBJ 失败:", err);
-            messageApi?.error("导出 OBJ 失败，请检查控制台信息。");
+            messageApi?.error(gLang('exportOBJFailed'));
         }
     }
 
@@ -343,7 +343,7 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             downloadTextData(stlString, "scene.stl", "model/stl");
         } catch (err) {
             console.error("导出 STL 失败:", err);
-            messageApi?.error("导出 STL 失败，请检查控制台信息。");
+            messageApi?.error(gLang('exportSTLFailed'));
         }
     }
 
@@ -356,7 +356,7 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
                 gl.render(scene, camera);
                 const bounding = computeScreenBoundingBox(scene, camera, gl);
                 if (!bounding) {
-                    messageApi?.warning("场景为空或对象在屏幕之外，无法截图。");
+                    messageApi?.warning(gLang('sceneEmptyCannotScreenshot'));
                     return;
                 }
 
@@ -415,7 +415,7 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             // ======== 多格式导出入口 ========
             exportScene: (format) => {
                 if (!scene) {
-                    messageApi?.warning("场景为空，无法导出");
+                    messageApi?.warning(gLang('sceneEmptyCannotExport'));
                     return;
                 }
                 // 先渲染一次，确保最新

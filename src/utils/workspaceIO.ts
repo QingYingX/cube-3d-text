@@ -206,7 +206,11 @@ export function upgradeToLatest(jsonData: string, messageApi?: MessageInstance |
 /**
  * 从JSON文件导入工作区数据
  */
-export function importWorkspaceFromFile(file: File, messageApi?: MessageInstance | null): Promise<WorkspaceData> {
+export function importWorkspaceFromFile(
+  file: File,
+  messageApi?: MessageInstance | null,
+  gLang?: (key: string) => string
+): Promise<WorkspaceData> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
@@ -215,16 +219,16 @@ export function importWorkspaceFromFile(file: File, messageApi?: MessageInstance
         const jsonData = event.target?.result as string;
         const workspace = upgradeToLatest(jsonData, messageApi);
         resolve(workspace);
-        messageApi?.success('项目导入成功');
+        messageApi?.success(gLang?.('projectImportSuccess') || 'Project imported successfully');
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : '导入文件失败';
+        const errorMsg = gLang?.('importProjectFailed') || 'Failed to import file';
         messageApi?.error(errorMsg);
         reject(error);
       }
     };
-    
+
     reader.onerror = () => {
-      const errorMsg = '读取文件失败';
+      const errorMsg = gLang?.('readProjectFileFailed') || 'Failed to read file';
       messageApi?.error(errorMsg);
       reject(new Error(errorMsg));
     };

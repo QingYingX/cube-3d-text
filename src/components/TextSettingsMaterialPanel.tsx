@@ -375,7 +375,7 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
                 message.success(gLang('materialImported'));
             } catch (error) {
                 console.error("导入材质失败:", error);
-                message.error(gLang('importFailed'));
+                message.error(gLang('importMaterialFailed'));
             }
 
             if (fileInputRef.current) {
