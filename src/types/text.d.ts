@@ -66,4 +66,7 @@ export interface TextMaterialColorOption {
 
 export interface CameraOptions {
     fov: number;
+    cameraType?: 'perspective' | 'orthographic';
+    zoom?: number;
+    userZoomFactor?: number; // 用户手动缩放的倍数，用于在 FOV 变化时保留用户的缩放偏好
 }

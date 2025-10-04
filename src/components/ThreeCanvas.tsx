@@ -8,6 +8,28 @@ import ThreeScene, { ThreeSceneHandle } from "./ThreeScene.tsx";
 import { GLTFExporter, OBJExporter, STLExporter, OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useMessage } from "../contexts/MessageContext.tsx";
 
+// 相机配置常量
+const CAMERA_CONSTANTS = {
+    referenceFOV: 75,        // 参考视场角
+    referenceDistance: 55,   // 参考距离
+    frustumSize: 30,         // 正交相机视锥大小
+    farMultiplier: 3,        // far 裁剪面倍数
+    minFar: 2000,            // 最小 far 裁剪面距离
+} as const;
+
+// 判断是否为正交相机
+function isOrthographicCamera(options: CameraOptions): boolean {
+    return options.cameraType === 'orthographic' || options.fov === 0;
+}
+
+// 计算相机距离
+function calculateCameraDistance(fov: number, isOrthographic: boolean): number {
+    if (isOrthographic) {
+        return CAMERA_CONSTANTS.referenceDistance;
+    }
+    return CAMERA_CONSTANTS.referenceDistance * (CAMERA_CONSTANTS.referenceFOV / fov);
+}
+
 export interface ThreeCanvasHandle {
     takeScreenshot: () => void;
     resetCamera: () => void;
@@ -16,23 +38,139 @@ export interface ThreeCanvasHandle {
 
 interface ThreeCanvasProps {
     cameraOptions: CameraOptions;
+    setCameraOptions: (opts: CameraOptions) => void;
     texts: Text3DData[];
     globalFontId: string;
     fontsMap: Record<string, string>;
     globalTextureYOffset: number;
 }
 
-const CameraController: React.FC<{ fov: number }> = ({ fov }) => {
+// 监听用户手动缩放的组件
+const UserZoomTracker: React.FC<{
+    cameraOptions: CameraOptions;
+    setCameraOptions: (opts: CameraOptions) => void;
+    orbitRef: React.RefObject<OrbitControlsImpl>;
+}> = ({ cameraOptions, setCameraOptions, orbitRef }) => {
     const { camera } = useThree();
 
     useEffect(() => {
-        if (camera instanceof THREE.PerspectiveCamera) {
-            camera.fov = fov;
+        if (!orbitRef.current) return;
+
+        const controls = orbitRef.current;
+        let timeoutId: ReturnType<typeof setTimeout>;
+
+        const handleChange = () => {
+            // 清除之前的定时器
+            clearTimeout(timeoutId);
+
+            // 延迟更新，避免频繁触发
+            timeoutId = setTimeout(() => {
+                const { fov, cameraType = 'perspective' } = cameraOptions;
+
+                if (cameraType === 'orthographic' || fov === 0) {
+                    // 正交相机 - 通过 zoom 属性缩放
+                    if (camera instanceof THREE.OrthographicCamera) {
+                        const currentZoom = camera.zoom;
+                        const baseZoom = cameraOptions.zoom || 1;
+                        const userZoomFactor = currentZoom / baseZoom;
+
+                        if (Math.abs(userZoomFactor - (cameraOptions.userZoomFactor || 1)) > 0.01) {
+                            setCameraOptions({
+                                ...cameraOptions,
+                                userZoomFactor
+                            });
+                        }
+                    }
+                } else {
+                    // 透视相机 - 通过距离计算缩放因子
+                    if (camera instanceof THREE.PerspectiveCamera) {
+                        const currentDistance = Math.sqrt(
+                            camera.position.x ** 2 +
+                            camera.position.y ** 2 +
+                            camera.position.z ** 2
+                        );
+
+                        const baseDistance = calculateCameraDistance(fov, false);
+                        const userZoomFactor = baseDistance / currentDistance;
+
+                        if (Math.abs(userZoomFactor - (cameraOptions.userZoomFactor || 1)) > 0.01) {
+                            setCameraOptions({
+                                ...cameraOptions,
+                                userZoomFactor
+                            });
+                        }
+                    }
+                }
+            }, 300); // 300ms 延迟，避免频繁更新
+        };
+
+        controls.addEventListener('change', handleChange);
+
+        return () => {
+            controls.removeEventListener('change', handleChange);
+            clearTimeout(timeoutId);
+        };
+    }, [cameraOptions, setCameraOptions, orbitRef, camera]);
+
+    return null;
+};
+
+const CameraController: React.FC<{ cameraOptions: CameraOptions }> = ({ cameraOptions }) => {
+    const { camera, size } = useThree();
+
+    useEffect(() => {
+        const { fov, cameraType = 'perspective', zoom = 1, userZoomFactor = 1 } = cameraOptions;
+
+        if (cameraType === 'orthographic' || fov === 0) {
+            // 切换到正交相机
+            if (!(camera instanceof THREE.OrthographicCamera)) {
+                console.warn("当前相机不是 OrthographicCamera，无法设置正交参数");
+                return;
+            }
+            // 设置正交相机的缩放 - 使用更大的视锥以匹配透视相机的视野
+            const aspect = size.width / size.height;
+            camera.left = -CAMERA_CONSTANTS.frustumSize * aspect;
+            camera.right = CAMERA_CONSTANTS.frustumSize * aspect;
+            camera.top = CAMERA_CONSTANTS.frustumSize;
+            camera.bottom = -CAMERA_CONSTANTS.frustumSize;
+            camera.near = 0.1;
+            camera.far = CAMERA_CONSTANTS.minFar;
+            camera.zoom = zoom * userZoomFactor; // 应用用户缩放因子
             camera.updateProjectionMatrix();
         } else {
-            console.warn("当前相机不是 PerspectiveCamera，无法设置 fov");
+            // 透视相机模式 - 根据 FOV 自动调整相机距离以保持物体大小
+            if (camera instanceof THREE.PerspectiveCamera) {
+                camera.fov = fov;
+                camera.near = 0.1;
+
+                // 根据 FOV 调整相机位置，保持物体在屏幕上的视觉大小
+                const currentDistance = Math.sqrt(
+                    camera.position.x ** 2 +
+                    camera.position.y ** 2 +
+                    camera.position.z ** 2
+                );
+
+                // 计算基准距离：FOV 越小，需要越远的距离
+                const baseDistance = calculateCameraDistance(fov, false);
+
+                // 应用用户的缩放因子
+                const targetDistance = baseDistance / userZoomFactor;
+                const scale = targetDistance / currentDistance;
+
+                camera.position.multiplyScalar(scale);
+
+                // 动态调整 far 裁剪面，确保不会裁剪掉远处的物体
+                camera.far = Math.max(
+                    targetDistance * CAMERA_CONSTANTS.farMultiplier,
+                    CAMERA_CONSTANTS.minFar
+                );
+
+                camera.updateProjectionMatrix();
+            } else {
+                console.warn("当前相机不是 PerspectiveCamera，无法设置 fov");
+            }
         }
-    }, [fov, camera]);
+    }, [cameraOptions, camera, size]);
 
     return null;
 };
@@ -42,7 +180,7 @@ interface ScreenshotProps {
 }
 
 const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref) => {
-    const { texts, cameraOptions, globalFontId, fontsMap, globalTextureYOffset } = props;
+    const { texts, cameraOptions, setCameraOptions, globalFontId, fontsMap, globalTextureYOffset } = props;
     const orbitRef = useRef<OrbitControlsImpl>(null);
     const threeSceneRef = useRef<ThreeSceneHandle>(null);
     const messageApi = useMessage();
@@ -249,9 +387,27 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             },
 
             resetCamera: () => {
+                // 重置 OrbitControls
                 orbitRef.current?.reset();
-                camera.position.set(0, -20, 50);
-                //camera.position.set(0, 0, 50);
+
+                // 重置用户缩放因子
+                setCameraOptions({
+                    ...cameraOptions,
+                    userZoomFactor: 1
+                });
+
+                // 根据当前 FOV 和相机类型计算正确的重置位置
+                const { fov } = cameraOptions;
+                const isOrtho = isOrthographicCamera(cameraOptions);
+                const initialDistance = calculateCameraDistance(fov, isOrtho);
+
+                // 计算位置比例
+                const positionScale = initialDistance / CAMERA_CONSTANTS.referenceDistance;
+                camera.position.set(
+                    0,
+                    -20 * positionScale,
+                    50 * positionScale
+                );
                 camera.lookAt(0, 0, 0);
                 camera.updateProjectionMatrix();
             },
@@ -287,10 +443,42 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
         return null;
     };
 
+    const isOrthographic = isOrthographicCamera(cameraOptions);
+
+    // 计算初始相机位置 - 根据 FOV 调整距离
+    const fov = cameraOptions.fov ?? CAMERA_CONSTANTS.referenceFOV; // 使用 ?? 避免 0 被当作 falsy
+    const initialDistance = calculateCameraDistance(fov, isOrthographic);
+    const initialPosition: [number, number, number] = [
+        0,
+        -20 * (initialDistance / CAMERA_CONSTANTS.referenceDistance),
+        50 * (initialDistance / CAMERA_CONSTANTS.referenceDistance)
+    ];
+
+    // 动态计算 far 裁剪面
+    const initialFar = isOrthographic
+        ? CAMERA_CONSTANTS.minFar
+        : Math.max(initialDistance * CAMERA_CONSTANTS.farMultiplier, CAMERA_CONSTANTS.minFar);
+
     return (
         <Canvas
+            key={isOrthographic ? 'orthographic' : 'perspective'} // 强制重建 Canvas 以切换相机类型
             // 如果要保证截图含透明背景 + 保留像素，通常要加 preserveDrawingBuffer: true
-            camera={{ position: [0, -20, 50], fov: cameraOptions.fov }}
+            orthographic={isOrthographic}
+            camera={
+                isOrthographic
+                    ? {
+                        position: initialPosition,
+                        zoom: cameraOptions.zoom || 1,
+                        near: 0.1,
+                        far: CAMERA_CONSTANTS.minFar
+                    }
+                    : {
+                        position: initialPosition,
+                        fov: cameraOptions.fov,
+                        near: 0.1,
+                        far: initialFar
+                    }
+            }
             gl={{
                 alpha: true,             // 允许透明背景
                 preserveDrawingBuffer: true, // 截图后可读取
@@ -300,7 +488,12 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
             style={{ background: "transparent" }}
         >
             <CanvasToolsImpl orbitRef={orbitRef} />
-            <CameraController fov={cameraOptions.fov} />
+            <CameraController cameraOptions={cameraOptions} />
+            <UserZoomTracker
+                cameraOptions={cameraOptions}
+                setCameraOptions={setCameraOptions}
+                orbitRef={orbitRef}
+            />
             <ThreeScene
                 ref={threeSceneRef}
                 texts={texts}

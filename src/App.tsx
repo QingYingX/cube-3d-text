@@ -104,7 +104,8 @@ const AppContent: React.FC = () => {
     ]);
 
     const [cameraOptions, setCameraOptions] = useState<CameraOptions>({
-        fov: 75
+        fov: 75,
+        userZoomFactor: 1
     });
 
     const [textPanelActiveKeys, setTextPanelActiveKeys] = useState<string[]>(['1']);
@@ -418,6 +419,7 @@ const AppContent: React.FC = () => {
                         <ThreeCanvas
                             ref={threeCanvasRef}
                             cameraOptions={cameraOptions}
+                            setCameraOptions={setCameraOptions}
                             texts={texts}
                             globalFontId={globalFontId}
                             fontsMap={fontsMap}

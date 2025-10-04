@@ -70,13 +70,28 @@ const SceneAndCameraSettingsPanel: FC<CameraSettingsPanelProps> = ({
             </Form.Item>
 
             {/* 2. 相机 FOV (perspective) 设置 */}
-            <Form.Item label={gLang("perspective", { angle: cameraOptions.fov })} style={{ marginBottom: 0 }}>
+            <Form.Item
+                label={
+                    cameraOptions.fov === 0
+                        ? gLang("orthographicProjection")
+                        : gLang("perspectiveAngle", { angle: cameraOptions.fov })
+                }
+                style={{ marginBottom: 0 }}
+            >
                 <Slider
-                    min={1}
+                    min={0}
                     max={120}
                     step={1}
                     value={cameraOptions.fov}
-                    onChange={(val) => setCameraOptions({ ...cameraOptions, fov: val })}
+                    onChange={(val) => {
+                        const newCameraType = val === 0 ? 'orthographic' : 'perspective';
+                        setCameraOptions({
+                            ...cameraOptions,
+                            fov: val,
+                            cameraType: newCameraType,
+                            zoom: cameraOptions.zoom || 1
+                        });
+                    }}
                 />
             </Form.Item>
         </>
