@@ -4,7 +4,8 @@ export const builtinFontsMap: { [name: string]: string } = {
     "Minecraft Ten": "font/Minecraft_Ten_Regular.json",
     "Fusion Pixel 8px": "font/Fusion_Pixel_8px_Proportional_zh_hans_Regular.json",
     "Fusion Pixel 10px": "font/Fusion_Pixel_10px_Proportional_zh_hans_Regular.json",
-    "得意黑": "font/Smiley_Sans_Oblique_Regular.json"
+    "得意黑": "font/Smiley_Sans_Oblique_Regular.json",
+    "Unifont ASCII": "font/Unifont_ASCII_Regular.json"
 };
 
 export const builtinFontsTextureYOffset: { [name: string]: number } = {
@@ -50,5 +51,10 @@ export const builtinFontsLicence: { [name: string]: FontLicenceInfo } = {
         tagColor: "success",
         tag: "fontLicence.sil",
         tagTooltip: "fontLicence.smileyTooltip",
+    },
+    "Unifont ASCII": {
+        tagColor: "success",
+        tag: "fontLicence.sil",
+        tagTooltip: "fontLicence.unifontTooltip",
     }
 }

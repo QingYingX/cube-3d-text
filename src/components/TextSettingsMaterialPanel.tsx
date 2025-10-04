@@ -240,9 +240,9 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
                         </Form.Item>
                         <Form.Item label={gLang('repeatX')} key={`${face}-image-repeat-x`}>
                             <Slider
-                                min={0.001}
+                                min={0.005}
                                 max={2}
-                                step={0.001}
+                                step={0.005}
                                 value={(currentMaterial as TextMaterialImageOption).repeatX}
                                 onChange={(value) =>
                                     handleOptionChange(face, { repeatX: value })
@@ -251,9 +251,9 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
                         </Form.Item>
                         <Form.Item label={gLang('repeatY')} key={`${face}-image-repeat-y`}>
                             <Slider
-                                min={0.001}
+                                min={0.005}
                                 max={2}
-                                step={0.001}
+                                step={0.005}
                                 value={(currentMaterial as TextMaterialImageOption).repeatY}
                                 onChange={(value) =>
                                     handleOptionChange(face, { repeatY: value })
