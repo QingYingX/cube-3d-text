@@ -28,6 +28,7 @@ const TextSettingsOverlayPanel: React.FC<TextSettingsOverlayPanelProps> = (props
                 </Button>
                 {builtinOverlayRenderers.map((info) => (
                     <Button
+                        key={info.name}
                         type={overlay && overlay.name === info.name ? 'primary' : undefined}
                         ghost={overlay && overlay.name === info.name}
                         onClick={() => setOverlay(info)}

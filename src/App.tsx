@@ -48,7 +48,6 @@ import {
 import { FontProvider, useFonts } from "./contexts/FontContext";
 import { MaterialProvider } from './contexts/MaterialContext';
 
-const { Panel } = Collapse;
 
 const AppContent: React.FC = () => {
     const { language, setLanguage, gLang } = useLanguage();
@@ -318,42 +317,50 @@ const AppContent: React.FC = () => {
                                     defaultActiveKey={["camera"]}
                                     bordered={false}
                                     style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}
-                                >
-                                    <Panel header={gLang("cameraSettings")} key="camera">
-                                        <SceneAndCameraSettingsPanel
-                                            selectedFont={globalFontId}
-                                            setSelectedFont={setGlobalFontId}
-                                            cameraOptions={cameraOptions}
-                                            setCameraOptions={setCameraOptions}
-                                        />
-                                    </Panel>
-                                </Collapse>
+                                    items={[
+                                        {
+                                            key: "camera",
+                                            label: gLang("cameraSettings"),
+                                            children: (
+                                                <SceneAndCameraSettingsPanel
+                                                    selectedFont={globalFontId}
+                                                    setSelectedFont={setGlobalFontId}
+                                                    cameraOptions={cameraOptions}
+                                                    setCameraOptions={setCameraOptions}
+                                                />
+                                            )
+                                        }
+                                    ]}
+                                />
                                 {texts.length > 0 &&
-                                    <Collapse activeKey={textPanelActiveKeys} onChange={setTextPanelActiveKeys} bordered={false} style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}>
-                                        {texts.map((text, index) => (
-                                            <Panel
-                                                header={text.content ? text.content : gLang(`textPanelTitle`, { index: index + 1 })}
-                                                key={index + 1}
-                                                extra={
-                                                    <Flex style={{ height: 22, width: 22, marginTop: -2 }}>
-                                                        <Button
-                                                            type={"text"}
-                                                            size={'small'}
-                                                            style={{
-                                                                height: 26,
-                                                                width: 26,
-                                                            }}
-                                                            onClick={() => {
-                                                                const newTexts = [...texts];
-                                                                newTexts.splice(index, 1);
-                                                                setTexts(newTexts);
-                                                            }}
-                                                        >
-                                                            <DeleteOutlined style={{ opacity: 0.5 }} />
-                                                        </Button>
-                                                    </Flex>
-                                                }
-                                            >
+                                    <Collapse
+                                        activeKey={textPanelActiveKeys}
+                                        onChange={setTextPanelActiveKeys}
+                                        bordered={false}
+                                        style={{ background: "white", boxShadow: "0 2px 16px rgba(0, 0, 0, 0.05)" }}
+                                        items={texts.map((text, index) => ({
+                                            key: (index + 1).toString(),
+                                            label: text.content ? text.content : gLang(`textPanelTitle`, { index: index + 1 }),
+                                            extra: (
+                                                <Flex style={{ height: 22, width: 22, marginTop: -2 }}>
+                                                    <Button
+                                                        type={"text"}
+                                                        size={'small'}
+                                                        style={{
+                                                            height: 26,
+                                                            width: 26,
+                                                        }}
+                                                        onClick={() => {
+                                                            const newTexts = [...texts];
+                                                            newTexts.splice(index, 1);
+                                                            setTexts(newTexts);
+                                                        }}
+                                                    >
+                                                        <DeleteOutlined style={{ opacity: 0.5 }} />
+                                                    </Button>
+                                                </Flex>
+                                            ),
+                                            children: (
                                                 <TextSettingsPanel
                                                     text={text.content}
                                                     textOptions={text.opts}
@@ -371,9 +378,9 @@ const AppContent: React.FC = () => {
                                                     }}
                                                     onFontChange={(fontId) => handleTextFontChange(index, fontId)}
                                                 />
-                                            </Panel>
-                                        ))}
-                                    </Collapse>
+                                            )
+                                        }))}
+                                    />
                                 }
                                 <Button
                                     type="dashed"

@@ -12,7 +12,6 @@ import {
 import { useLanguage } from "../language";
 import { serializeMaterial, SerializedMaterial, deserializeMaterial } from "../utils/materialSerializer";
 
-const { Panel } = Collapse;
 const { Option } = Select;
 
 interface TextSettingsMaterialPanelProps {
@@ -394,15 +393,19 @@ const TextSettingsMaterialPanel: React.FC<TextSettingsMaterialPanelProps> = ({
     return (
         <>
             <Flex vertical gap={'small'}>
-                <Collapse accordion>
-                    {(Object.keys(materials) as Array<keyof TextMaterials>).map((face) => (
-                        <Panel header={faceLabels[face]} key={face} extra={renderExtraPreview(materials[face])}>
+                <Collapse
+                    accordion
+                    items={(Object.keys(materials) as Array<keyof TextMaterials>).map((face) => ({
+                        key: face,
+                        label: faceLabels[face],
+                        extra: renderExtraPreview(materials[face]),
+                        children: (
                             <Form layout="vertical">
                                 {renderModeOptions(face)}
                             </Form>
-                        </Panel>
-                    ))}
-                </Collapse>
+                        )
+                    }))}
+                />
                 <Flex gap={0} justify={'end'}>
                     <Tooltip title={gLang('exportMaterial')}>
                         <Button

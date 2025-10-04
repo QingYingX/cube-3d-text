@@ -129,7 +129,9 @@ const TextSettingsMaterialPresets: React.FC<TextSettingsMaterialPresetsProps> = 
         <Card size={'small'} title="材质预设">
             {isLoading ? (
                 <Flex justify="center" align="center" style={{ padding: '20px' }}>
-                    <Spin tip="加载材质中..." />
+                    <Spin tip="加载材质中...">
+                        <div style={{ minHeight: '60px' }} />
+                    </Spin>
                 </Flex>
             ) : error ? (
                 <Alert
